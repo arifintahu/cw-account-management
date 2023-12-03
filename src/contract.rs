@@ -84,26 +84,26 @@ mod query {
 mod tests {
     use cosmwasm_std::from_json;
     use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
-    use crate::msg::AdminListResponse;
+    use crate::msg::{AdminListResponse, MemberListResponse};
 
     use super::*;
+
+    const ALICE: &str = "alice";
+    const BOB: &str = "bob";
+    const CARL: &str = "carl";
 
     #[test]
     fn query_admin_list() {
         let mut deps = mock_dependencies();
         let env = mock_env();
 
-        let alice = "alice";
-        let bob = "bob";
-        let carl = "carl";
-
         instantiate(
             deps.as_mut(),
             env.clone(),
             mock_info("sender", &[]),
             InstantiateMsg {
-                admins: vec![alice.to_string(), bob.to_string()],
-                members: vec![carl.to_string()],
+                admins: vec![ALICE.to_string(), BOB.to_string()],
+                members: vec![CARL.to_string()],
                 mutable: false,
             },
         ).unwrap();
@@ -113,7 +113,33 @@ mod tests {
         assert_eq!(
             resp,
             AdminListResponse {
-                admins: vec![alice.to_string(), bob.to_string()],
+                admins: vec![ALICE.to_string(), BOB.to_string()],
+            }
+        )
+    }
+
+    #[test]
+    fn query_member_list() {
+        let mut deps = mock_dependencies();
+        let env = mock_env();
+
+        instantiate(
+            deps.as_mut(),
+            env.clone(),
+            mock_info("sender", &[]),
+            InstantiateMsg {
+                admins: vec![ALICE.to_string(), BOB.to_string()],
+                members: vec![CARL.to_string()],
+                mutable: false,
+            },
+        ).unwrap();
+
+        let resp = query(deps.as_ref(), env, QueryMsg::Memberlist {}).unwrap();
+        let resp: MemberListResponse = from_json(&resp).unwrap();
+        assert_eq!(
+            resp,
+            MemberListResponse {
+                members: vec![CARL.to_string()],
             }
         )
     }
