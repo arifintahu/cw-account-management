@@ -79,3 +79,42 @@ mod query {
         Ok(resp)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use cosmwasm_std::from_json;
+    use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
+    use crate::msg::AdminListResponse;
+
+    use super::*;
+
+    #[test]
+    fn query_admin_list() {
+        let mut deps = mock_dependencies();
+        let env = mock_env();
+
+        let alice = "alice";
+        let bob = "bob";
+        let carl = "carl";
+
+        instantiate(
+            deps.as_mut(),
+            env.clone(),
+            mock_info("sender", &[]),
+            InstantiateMsg {
+                admins: vec![alice.to_string(), bob.to_string()],
+                members: vec![carl.to_string()],
+                mutable: false,
+            },
+        ).unwrap();
+
+        let resp = query(deps.as_ref(), env, QueryMsg::AdminList {}).unwrap();
+        let resp: AdminListResponse = from_json(&resp).unwrap();
+        assert_eq!(
+            resp,
+            AdminListResponse {
+                admins: vec![alice.to_string(), bob.to_string()],
+            }
+        )
+    }
+}
