@@ -46,12 +46,36 @@ pub fn execute(
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(
-    _deps: Deps,
+    deps: Deps,
     _env: Env,
     msg: QueryMsg,
 ) -> StdResult<Binary> {
+    use QueryMsg::*;
+
     match msg {
-        QueryMsg::AdminList {  } => to_json_binary(&msg),
-        QueryMsg::Memberlist {  } => to_json_binary(&msg),
+        AdminList {} => to_json_binary(&query::admin_list(deps)?),
+        Memberlist {} => to_json_binary(&query::member_list(deps)?),
+    }
+}
+
+mod query {
+    use crate::msg::{AdminListResponse, MemberListResponse};
+
+    use super::*;
+
+    pub fn admin_list(deps: Deps) -> StdResult<AdminListResponse> {
+        let cfg = STATE.load(deps.storage)?;
+        let resp = AdminListResponse{
+            admins: cfg.admins.into_iter().map(|a| a.into()).collect(),
+        };
+        Ok(resp)
+    }
+
+    pub fn member_list(deps: Deps) -> StdResult<MemberListResponse> {
+        let cfg = STATE.load(deps.storage)?;
+        let resp = MemberListResponse{
+            members: cfg.members.into_iter().map(|a| a.into()).collect(),
+        };
+        Ok(resp)
     }
 }
