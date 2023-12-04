@@ -14,10 +14,14 @@ pub struct InstantiateMsg {
 pub enum ExecuteMsg {
     // Freeze will make a mutable contact immutable, must be called by an admin
     Freeze {},
-    // UpdateAdmins will change current admins, must be called by an admin
-    UpdateAdmins { admins: Vec<String> },
-    // UpdateMembers will change current members, must be called by an admin
-    UpdateMembers { members: Vec<String> },
+    // AddAdmins will add admins to current admins, must be called by an admin
+    AddAdmins { admins: Vec<String> },
+    // RemoveAdmins will remove admins from current admins, must be called by an admin
+    RemoveAdmins { admins: Vec<String> },
+    // AddMembers will add members to current members, must be called by an admin
+    AddMembers { members: Vec<String> },
+    // RemoveMembers will remove members from current members, must be called by an admin
+    RemoveMembers { members: Vec<String> },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema, QueryResponses)]

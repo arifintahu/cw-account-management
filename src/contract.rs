@@ -39,9 +39,15 @@ pub fn execute(
 ) -> Result<Response<Empty>, ContractError> {
     match msg {
         ExecuteMsg::Freeze {  } => Ok(Response::new()),
-        ExecuteMsg::UpdateAdmins { admins } => Ok(Response::new()),
-        ExecuteMsg::UpdateMembers { members } => Ok(Response::new()),
+        ExecuteMsg::AddAdmins { admins } => Ok(Response::new()),
+        ExecuteMsg::RemoveAdmins { admins } => Ok(Response::new()),
+        ExecuteMsg::AddMembers { members } => Ok(Response::new()),
+        ExecuteMsg::RemoveMembers { members } => Ok(Response::new()),
     }
+}
+
+mod exec {
+    use super::*;
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
