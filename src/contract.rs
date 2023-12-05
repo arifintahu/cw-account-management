@@ -40,7 +40,7 @@ pub fn execute(
     match msg {
         ExecuteMsg::Freeze {  } => Ok(Response::new()),
         ExecuteMsg::AddAdmins { admins } => exec::add_admins(deps, info, admins),
-        ExecuteMsg::RemoveAdmins { admins } => Ok(Response::new()),
+        ExecuteMsg::RemoveAdmins { admins } => exec::remove_admins(deps, info, admins),
         ExecuteMsg::AddMembers { members } => Ok(Response::new()),
         ExecuteMsg::RemoveMembers { members } => Ok(Response::new()),
     }
@@ -66,7 +66,25 @@ mod exec {
         STATE.save(deps.storage, &curr_state)?;
 
         Ok(Response::new().add_attribute("action", "add_admins"))
-    } 
+    }
+
+    pub fn remove_admins (
+        deps: DepsMut,
+        info: MessageInfo,
+        admins: Vec<String>,
+    ) -> Result<Response, ContractError> {
+        let mut curr_state = STATE.load(deps.storage)?;
+        if !curr_state.can_modify(info.sender.as_ref()) {
+            return Err(ContractError::Unauthorized {
+                sender: info.sender,
+            });
+        }
+        let admins = map_validate(deps.api, &admins)?;
+        curr_state.admins.retain(|curr_admin| !admins.contains(curr_admin));
+        STATE.save(deps.storage, &curr_state)?;
+
+        Ok(Response::new().add_attribute("action", "remove_admins"))
+    }
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -236,6 +254,62 @@ mod tests {
             resp,
             AdminListResponse {
                 admins: vec![ALICE.to_string(), Addr::unchecked("owner").to_string(), BOB.to_string()],
+            }
+        );
+    }
+
+    #[test]
+    fn exec_remove_admins() {
+        let mut app = App::default();
+
+        let code = ContractWrapper::new(execute, instantiate, query);
+        let code_id = app.store_code(Box::new(code));
+
+        let addr = app
+            .instantiate_contract(
+                code_id,
+                Addr::unchecked("owner"),
+                &InstantiateMsg {
+                    admins: vec![ALICE.to_string(), BOB.to_string(), Addr::unchecked("owner").to_string()],
+                    members: vec![CARL.to_string()],
+                    mutable: true,
+                },
+                &[],
+                "Contract",
+                None,
+            )
+            .unwrap();
+
+        let resp: AdminListResponse = app
+            .wrap()
+            .query_wasm_smart(addr.clone(), &QueryMsg::AdminList {})
+            .unwrap();
+        assert_eq!(
+            resp,
+            AdminListResponse {
+                admins: vec![ALICE.to_string(), BOB.to_string(), Addr::unchecked("owner").to_string()],
+            }
+        );
+
+        let msg = ExecuteMsg::RemoveAdmins { 
+            admins: vec![BOB.to_string()],
+        };
+        let _ = app
+            .execute_contract(
+                Addr::unchecked("owner"),
+                addr.clone(),
+                &msg,
+                &[],
+            ).unwrap();
+        
+        let resp: AdminListResponse = app
+            .wrap()
+            .query_wasm_smart(addr.clone(), &QueryMsg::AdminList {})
+            .unwrap();
+        assert_eq!(
+            resp,
+            AdminListResponse {
+                admins: vec![ALICE.to_string(), Addr::unchecked("owner").to_string()],
             }
         );
     }
