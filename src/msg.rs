@@ -1,4 +1,5 @@
 use cosmwasm_schema::QueryResponses;
+use cosmwasm_std::Coin;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -22,6 +23,8 @@ pub enum ExecuteMsg {
     AddMembers { members: Vec<String> },
     // RemoveMembers will remove members from current members, must be called by an admin
     RemoveMembers { members: Vec<String> },
+    // SpendBalance will send token from smarcontract balance to recipient address
+    SpendBalance { recipient: String, amount: Vec<Coin> },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema, QueryResponses)]

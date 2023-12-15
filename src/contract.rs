@@ -43,10 +43,13 @@ pub fn execute(
         ExecuteMsg::RemoveAdmins { admins } => exec::remove_admins(deps, info, admins),
         ExecuteMsg::AddMembers { members } => exec::add_members(deps, info, members),
         ExecuteMsg::RemoveMembers { members } => exec::remove_members(deps, info, members),
+        ExecuteMsg::SpendBalance { recipient, amount } =>  exec::spend_balance(deps, info, recipient, amount),
     }
 }
 
 mod exec {
+    use cosmwasm_std::{Coin, BankMsg};
+
     use super::*;
 
     pub fn add_admins(
@@ -121,6 +124,29 @@ mod exec {
         STATE.save(deps.storage, &curr_state)?;
 
         Ok(Response::new().add_attribute("action", "remove_members"))
+    }
+
+    pub fn spend_balance (
+        deps: DepsMut,
+        info: MessageInfo,
+        recipient: String,
+        amount: Vec<Coin>,
+    ) -> Result<Response, ContractError> {
+        let curr_state = STATE.load(deps.storage)?;
+        if !curr_state.can_modify(info.sender.as_ref()) {
+            return Err(ContractError::Unauthorized {
+                sender: info.sender,
+            });
+        }
+
+        let recipient_addr = deps.api.addr_validate(&recipient)?;
+        let msg = BankMsg::Send { to_address: recipient_addr.to_string(), amount };
+        
+        let res = Response::new()
+            .add_attribute("action", "spend_balance")
+            .add_attribute("recipient", recipient)
+            .add_message(msg);
+        Ok(res)
     }
 }
 
