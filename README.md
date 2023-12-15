@@ -1,20 +1,21 @@
 # cw-account-management
 
 # Instantiate
-- [ ] admin
-- [ ] members
+- [x] admins
+- [x] members
 - [ ] whitelist-addresses
 - [ ] transfer limit
 
 # Execute
-- [ ] add/remove members
+- [x] add/remove admins
+- [x] add/remove members
 - [ ] add/remove whitelist addresses
 - [ ] add/remove transfer limit
 - [ ] add balance to smartcontract
 - [ ] spend balance
 
 # Query
-- [ ] query admin
-- [ ] query members
+- [x] query admin list
+- [x] query member list
 - [ ] query whitelist-addresses
 - [ ] query transfer limit
