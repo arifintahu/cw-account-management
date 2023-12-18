@@ -43,7 +43,7 @@ pub fn execute(
         ExecuteMsg::RemoveAdmins { admins } => exec::remove_admins(deps, info, admins),
         ExecuteMsg::AddMembers { members } => exec::add_members(deps, info, members),
         ExecuteMsg::RemoveMembers { members } => exec::remove_members(deps, info, members),
-        ExecuteMsg::SpendBalance { recipient, amount } =>  exec::spend_balance(deps, info, recipient, amount),
+        ExecuteMsg::SpendBalances { recipient, amount } =>  exec::spend_balances(deps, info, recipient, amount),
     }
 }
 
@@ -126,7 +126,7 @@ mod exec {
         Ok(Response::new().add_attribute("action", "remove_members"))
     }
 
-    pub fn spend_balance (
+    pub fn spend_balances (
         deps: DepsMut,
         info: MessageInfo,
         recipient: String,
