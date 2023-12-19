@@ -188,7 +188,8 @@ mod query {
 
 #[cfg(test)]
 mod tests {
-    use cw_multi_test::{App, ContractWrapper, Executor};
+    use cosmwasm_std::{coin, Uint128};
+    use cw_multi_test::{App, ContractWrapper, Executor, AppBuilder};
     use crate::msg::{AdminListResponse, MemberListResponse};
 
     use super::*;
@@ -196,6 +197,21 @@ mod tests {
     const ALICE: &str = "alice";
     const BOB: &str = "bob";
     const CARL: &str = "carl";
+
+    const DENOM: &str = "denom";
+
+    fn mock_app() -> App {
+        AppBuilder::new().build(|router, _, storage| {
+            router
+                .bank
+                .init_balance(
+                    storage,
+                    &Addr::unchecked("owner"),
+                    vec![coin(100000, DENOM)],
+                )
+                .unwrap();
+        })
+    }
 
     #[test]
     fn query_admin_list() {
@@ -487,5 +503,49 @@ mod tests {
                 members: vec![ALICE.to_string()],
             }
         );
+    }
+
+    #[test]
+    fn exec_spend_balances() {
+        let mut app = mock_app();
+
+        let code = ContractWrapper::new(execute, instantiate, query);
+        let code_id = app.store_code(Box::new(code));
+
+        let addr = app
+            .instantiate_contract(
+                code_id,
+                Addr::unchecked("owner"),
+                &InstantiateMsg {
+                    admins: vec![ALICE.to_string(), Addr::unchecked("owner").to_string()],
+                    members: vec![CARL.to_string()],
+                    mutable: true,
+                },
+                &[],
+                "Contract",
+                None,
+            )
+            .unwrap();
+
+        let _ = app.send_tokens(Addr::unchecked("owner"), addr.clone(), &[coin(10000, DENOM)]);
+        let balance = app.wrap().query_balance(addr.clone(), DENOM).unwrap();
+        assert_eq!(balance.amount, Uint128::new(10000));
+        assert_eq!(balance.denom, DENOM);
+
+        let msg = ExecuteMsg::SpendBalances {
+            recipient: CARL.to_string(),
+            amount: vec![coin(1000, DENOM)],
+        };
+        let _ = app
+            .execute_contract(
+                Addr::unchecked("owner"),
+                addr.clone(),
+                &msg,
+                &[],
+            ).unwrap();
+        
+        let balance = app.wrap().query_balance(CARL.to_string(), DENOM).unwrap();
+        assert_eq!(balance.amount, Uint128::new(1000));
+        assert_eq!(balance.denom, DENOM);
     }
 }
