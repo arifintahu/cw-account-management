@@ -133,7 +133,7 @@ mod exec {
         amount: Vec<Coin>,
     ) -> Result<Response, ContractError> {
         let curr_state = STATE.load(deps.storage)?;
-        if !curr_state.can_modify(info.sender.as_ref()) {
+        if !curr_state.can_spend(info.sender.as_ref()) {
             return Err(ContractError::Unauthorized {
                 sender: info.sender,
             });
@@ -143,7 +143,7 @@ mod exec {
         let msg = BankMsg::Send { to_address: recipient_addr.to_string(), amount };
         
         let res = Response::new()
-            .add_attribute("action", "spend_balance")
+            .add_attribute("action", "spend_balances")
             .add_attribute("recipient", recipient)
             .add_message(msg);
         Ok(res)
