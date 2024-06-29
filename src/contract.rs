@@ -4,6 +4,7 @@ use cw2::set_contract_version;
 use crate::error::ContractError;
 use crate::msg::{InstantiateMsg, ExecuteMsg, QueryMsg};
 use crate::state::{State, STATE};
+use crate::execute::{add_admins, remove_admins, add_members, remove_members, spend_balances};
 
 // version info for migration info
 const CONTRACT_NAME: &str = "crates.io:cw-account-management";
@@ -39,114 +40,11 @@ pub fn execute(
 ) -> Result<Response<Empty>, ContractError> {
     match msg {
         ExecuteMsg::Freeze {  } => Ok(Response::new()),
-        ExecuteMsg::AddAdmins { admins } => exec::add_admins(deps, info, admins),
-        ExecuteMsg::RemoveAdmins { admins } => exec::remove_admins(deps, info, admins),
-        ExecuteMsg::AddMembers { members } => exec::add_members(deps, info, members),
-        ExecuteMsg::RemoveMembers { members } => exec::remove_members(deps, info, members),
-        ExecuteMsg::SpendBalances { recipient, amount } =>  exec::spend_balances(deps, info, recipient, amount),
-    }
-}
-
-mod exec {
-    use cosmwasm_std::{Coin, BankMsg};
-
-    use super::*;
-
-    pub fn add_admins(
-        deps: DepsMut,
-        info: MessageInfo,
-        admins: Vec<String>,
-    ) -> Result<Response, ContractError> {
-        let mut curr_state = STATE.load(deps.storage)?;
-        if !curr_state.can_modify(info.sender.as_ref()) {
-            return Err(ContractError::Unauthorized {
-                sender: info.sender,
-            });
-        }
-        
-        let mut admins = map_validate(deps.api, &admins)?;
-        curr_state.admins.append(&mut admins);
-        STATE.save(deps.storage, &curr_state)?;
-
-        Ok(Response::new().add_attribute("action", "add_admins"))
-    }
-
-    pub fn remove_admins (
-        deps: DepsMut,
-        info: MessageInfo,
-        admins: Vec<String>,
-    ) -> Result<Response, ContractError> {
-        let mut curr_state = STATE.load(deps.storage)?;
-        if !curr_state.can_modify(info.sender.as_ref()) {
-            return Err(ContractError::Unauthorized {
-                sender: info.sender,
-            });
-        }
-        let admins = map_validate(deps.api, &admins)?;
-        curr_state.admins.retain(|curr_admin| !admins.contains(curr_admin));
-        STATE.save(deps.storage, &curr_state)?;
-
-        Ok(Response::new().add_attribute("action", "remove_admins"))
-    }
-
-    pub fn add_members(
-        deps: DepsMut,
-        info: MessageInfo,
-        members: Vec<String>,
-    ) -> Result<Response, ContractError> {
-        let mut curr_state = STATE.load(deps.storage)?;
-        if !curr_state.can_modify(info.sender.as_ref()) {
-            return Err(ContractError::Unauthorized {
-                sender: info.sender,
-            });
-        }
-        
-        let mut members = map_validate(deps.api, &members)?;
-        curr_state.members.append(&mut members);
-        STATE.save(deps.storage, &curr_state)?;
-
-        Ok(Response::new().add_attribute("action", "add_members"))
-    }
-
-    pub fn remove_members (
-        deps: DepsMut,
-        info: MessageInfo,
-        members: Vec<String>,
-    ) -> Result<Response, ContractError> {
-        let mut curr_state = STATE.load(deps.storage)?;
-        if !curr_state.can_modify(info.sender.as_ref()) {
-            return Err(ContractError::Unauthorized {
-                sender: info.sender,
-            });
-        }
-        let members = map_validate(deps.api, &members)?;
-        curr_state.members.retain(|curr_member| !members.contains(curr_member));
-        STATE.save(deps.storage, &curr_state)?;
-
-        Ok(Response::new().add_attribute("action", "remove_members"))
-    }
-
-    pub fn spend_balances (
-        deps: DepsMut,
-        info: MessageInfo,
-        recipient: String,
-        amount: Vec<Coin>,
-    ) -> Result<Response, ContractError> {
-        let curr_state = STATE.load(deps.storage)?;
-        if !curr_state.can_spend(info.sender.as_ref()) {
-            return Err(ContractError::Unauthorized {
-                sender: info.sender,
-            });
-        }
-
-        let recipient_addr = deps.api.addr_validate(&recipient)?;
-        let msg = BankMsg::Send { to_address: recipient_addr.to_string(), amount };
-        
-        let res = Response::new()
-            .add_attribute("action", "spend_balances")
-            .add_attribute("recipient", recipient)
-            .add_message(msg);
-        Ok(res)
+        ExecuteMsg::AddAdmins { admins } => add_admins(deps, info, admins),
+        ExecuteMsg::RemoveAdmins { admins } => remove_admins(deps, info, admins),
+        ExecuteMsg::AddMembers { members } => add_members(deps, info, members),
+        ExecuteMsg::RemoveMembers { members } => remove_members(deps, info, members),
+        ExecuteMsg::SpendBalances { recipient, amount } => spend_balances(deps, info, recipient, amount),
     }
 }
 
