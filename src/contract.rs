@@ -5,6 +5,7 @@ use crate::error::ContractError;
 use crate::msg::{InstantiateMsg, ExecuteMsg, QueryMsg};
 use crate::state::{State, STATE};
 use crate::execute::{add_admins, remove_admins, add_members, remove_members, spend_balances};
+use crate::query::{admin_list, member_list};
 
 // version info for migration info
 const CONTRACT_NAME: &str = "crates.io:cw-account-management";
@@ -57,29 +58,7 @@ pub fn query(
     use QueryMsg::*;
 
     match msg {
-        AdminList {} => to_json_binary(&query::admin_list(deps)?),
-        Memberlist {} => to_json_binary(&query::member_list(deps)?),
-    }
-}
-
-mod query {
-    use crate::msg::{AdminListResponse, MemberListResponse};
-
-    use super::*;
-
-    pub fn admin_list(deps: Deps) -> StdResult<AdminListResponse> {
-        let cfg = STATE.load(deps.storage)?;
-        let resp = AdminListResponse{
-            admins: cfg.admins.into_iter().map(|a| a.into()).collect(),
-        };
-        Ok(resp)
-    }
-
-    pub fn member_list(deps: Deps) -> StdResult<MemberListResponse> {
-        let cfg = STATE.load(deps.storage)?;
-        let resp = MemberListResponse{
-            members: cfg.members.into_iter().map(|a| a.into()).collect(),
-        };
-        Ok(resp)
+        AdminList {} => to_json_binary(&admin_list(deps)?),
+        Memberlist {} => to_json_binary(&member_list(deps)?),
     }
 }
