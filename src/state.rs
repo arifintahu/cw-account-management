@@ -6,7 +6,7 @@ use cw_storage_plus::Item;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct State {
-    pub admins: Vec<Addr>,
+    pub admin: Addr,
     pub members: Vec<Addr>,
     pub mutable: bool,
 }
@@ -15,7 +15,7 @@ impl State {
     // return true if the address is registered as admin
     pub fn is_admin(&self, addr: impl AsRef<str>) -> bool {
         let addr = addr.as_ref();
-        self.admins.iter().any(|a| a.as_ref() == addr)
+        self.admin.as_ref() == addr
     }
 
     // return true if the address is registered as member

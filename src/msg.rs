@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct InstantiateMsg {
-    pub admins: Vec<String>,
+    pub admin: String,
     pub members: Vec<String>,
     pub mutable: bool,
 }
@@ -15,10 +15,8 @@ pub struct InstantiateMsg {
 pub enum ExecuteMsg {
     // Freeze will make a mutable contact immutable, must be called by an admin
     Freeze {},
-    // AddAdmins will add admins to current admins, must be called by an admin
-    AddAdmins { admins: Vec<String> },
-    // RemoveAdmins will remove admins from current admins, must be called by an admin
-    RemoveAdmins { admins: Vec<String> },
+    // ChangeAdmin will change current admin to new admin, must be called by a current admin
+    ChangeAdmin { new_admin: String },
     // AddMembers will add members to current members, must be called by an admin
     AddMembers { members: Vec<String> },
     // RemoveMembers will remove members from current members, must be called by an admin
@@ -30,8 +28,8 @@ pub enum ExecuteMsg {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema, QueryResponses)]
 #[serde(rename_all = "snake_case")]
 pub enum QueryMsg {
-    #[returns(AdminListResponse)]
-    AdminList {},
+    #[returns(AdminResponse)]
+    Admin {},
 
     #[returns(MemberListResponse)]
     Memberlist {},
@@ -39,8 +37,8 @@ pub enum QueryMsg {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-pub struct AdminListResponse {
-    pub admins: Vec<String>,
+pub struct AdminResponse {
+    pub admin: String,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

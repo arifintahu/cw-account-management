@@ -1,12 +1,12 @@
 use cosmwasm_std::{Response, DepsMut, MessageInfo, Coin, BankMsg};
 use crate::error::ContractError;
 use crate::state::STATE;
-use crate::helpers::map_validate;
+use crate::helpers::{map_validate, validate_addr};
 
-pub fn add_admins(
+pub fn change_admin(
     deps: DepsMut,
     info: MessageInfo,
-    admins: Vec<String>,
+    new_admin: String,
 ) -> Result<Response, ContractError> {
     let mut curr_state = STATE.load(deps.storage)?;
     if !curr_state.can_modify(info.sender.as_ref()) {
@@ -15,29 +15,10 @@ pub fn add_admins(
         });
     }
     
-    let mut admins = map_validate(deps.api, &admins)?;
-    curr_state.admins.append(&mut admins);
+    curr_state.admin = validate_addr(deps.api, &new_admin)?;
     STATE.save(deps.storage, &curr_state)?;
 
-    Ok(Response::new().add_attribute("action", "add_admins"))
-}
-
-pub fn remove_admins (
-    deps: DepsMut,
-    info: MessageInfo,
-    admins: Vec<String>,
-) -> Result<Response, ContractError> {
-    let mut curr_state = STATE.load(deps.storage)?;
-    if !curr_state.can_modify(info.sender.as_ref()) {
-        return Err(ContractError::Unauthorized {
-            sender: info.sender,
-        });
-    }
-    let admins = map_validate(deps.api, &admins)?;
-    curr_state.admins.retain(|curr_admin| !admins.contains(curr_admin));
-    STATE.save(deps.storage, &curr_state)?;
-
-    Ok(Response::new().add_attribute("action", "remove_admins"))
+    Ok(Response::new().add_attribute("action", "change_admin"))
 }
 
 pub fn add_members(

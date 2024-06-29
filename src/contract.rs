@@ -1,11 +1,12 @@
-use cosmwasm_std::{entry_point, StdResult, Response, DepsMut, Env, MessageInfo, Api, Addr, Deps, Binary, Empty, to_json_binary};
+use cosmwasm_std::{entry_point, StdResult, Response, DepsMut, Env, MessageInfo, Deps, Binary, Empty, to_json_binary};
 use cw2::set_contract_version;
 
 use crate::error::ContractError;
+use crate::helpers::{map_validate, validate_addr};
 use crate::msg::{InstantiateMsg, ExecuteMsg, QueryMsg};
 use crate::state::{State, STATE};
-use crate::execute::{add_admins, remove_admins, add_members, remove_members, spend_balances};
-use crate::query::{admin_list, member_list};
+use crate::execute::{change_admin, add_members, remove_members, spend_balances};
+use crate::query::{admin, member_list};
 
 // version info for migration info
 const CONTRACT_NAME: &str = "crates.io:cw-account-management";
@@ -20,16 +21,12 @@ pub fn instantiate(
 ) -> StdResult<Response> {
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
     let cfg = State {
-        admins: map_validate(deps.api, &msg.admins)?,
+        admin: validate_addr(deps.api, &msg.admin)?,
         members: map_validate(deps.api, &msg.members)?,
         mutable: msg.mutable,
     };
     STATE.save(deps.storage, &cfg)?;
     Ok(Response::default())
-}
-
-pub fn map_validate(api: &dyn Api, addresses: &[String]) -> StdResult<Vec<Addr>> {
-    addresses.iter().map(|addr| api.addr_validate(addr)).collect()
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -41,8 +38,7 @@ pub fn execute(
 ) -> Result<Response<Empty>, ContractError> {
     match msg {
         ExecuteMsg::Freeze {  } => Ok(Response::new()),
-        ExecuteMsg::AddAdmins { admins } => add_admins(deps, info, admins),
-        ExecuteMsg::RemoveAdmins { admins } => remove_admins(deps, info, admins),
+        ExecuteMsg::ChangeAdmin { new_admin } => change_admin(deps, info, new_admin),
         ExecuteMsg::AddMembers { members } => add_members(deps, info, members),
         ExecuteMsg::RemoveMembers { members } => remove_members(deps, info, members),
         ExecuteMsg::SpendBalances { recipient, amount } => spend_balances(deps, info, recipient, amount),
@@ -58,7 +54,7 @@ pub fn query(
     use QueryMsg::*;
 
     match msg {
-        AdminList {} => to_json_binary(&admin_list(deps)?),
+        Admin {} => to_json_binary(&admin(deps)?),
         Memberlist {} => to_json_binary(&member_list(deps)?),
     }
 }

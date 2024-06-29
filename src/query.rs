@@ -1,11 +1,11 @@
 use cosmwasm_std::{StdResult, Deps};
-use crate::msg::{AdminListResponse, MemberListResponse};
+use crate::msg::{AdminResponse, MemberListResponse};
 use crate::state::STATE;
 
-pub fn admin_list(deps: Deps) -> StdResult<AdminListResponse> {
+pub fn admin(deps: Deps) -> StdResult<AdminResponse> {
     let cfg = STATE.load(deps.storage)?;
-    let resp = AdminListResponse{
-        admins: cfg.admins.into_iter().map(|a| a.into()).collect(),
+    let resp = AdminResponse{
+        admin: cfg.admin.to_owned().to_string(),
     };
     Ok(resp)
 }

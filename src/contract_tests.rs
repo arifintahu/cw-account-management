@@ -1,6 +1,6 @@
 use cosmwasm_std::{coin, Uint128, Addr};
 use cw_multi_test::{App, ContractWrapper, Executor, AppBuilder};
-use crate::msg::{InstantiateMsg, ExecuteMsg, QueryMsg, AdminListResponse, MemberListResponse};
+use crate::msg::{InstantiateMsg, ExecuteMsg, QueryMsg, AdminResponse, MemberListResponse};
 use crate::contract::{instantiate, query, execute};
 
 const ALICE: &str = "alice";
@@ -23,7 +23,7 @@ fn mock_app() -> App {
 }
 
 #[test]
-fn query_admin_list() {
+fn query_admin() {
     let mut app = App::default();
 
     let code = ContractWrapper::new(execute, instantiate, query);
@@ -34,7 +34,7 @@ fn query_admin_list() {
             code_id,
             Addr::unchecked("owner"),
             &InstantiateMsg {
-                admins: vec![ALICE.to_string(), BOB.to_string()],
+                admin: ALICE.to_string(),
                 members: vec![CARL.to_string()],
                 mutable: false,
             },
@@ -44,14 +44,14 @@ fn query_admin_list() {
         )
         .unwrap();
 
-    let resp: AdminListResponse = app
+    let resp: AdminResponse = app
         .wrap()
-        .query_wasm_smart(addr, &QueryMsg::AdminList {})
+        .query_wasm_smart(addr, &QueryMsg::Admin{})
         .unwrap();
     assert_eq!(
         resp,
-        AdminListResponse {
-            admins: vec![ALICE.to_string(), BOB.to_string()],
+        AdminResponse {
+            admin: ALICE.to_string(),
         }
     )
 }
@@ -68,7 +68,7 @@ fn query_member_list() {
             code_id,
             Addr::unchecked("owner"),
             &InstantiateMsg {
-                admins: vec![ALICE.to_string(), BOB.to_string()],
+                admin: ALICE.to_string(),
                 members: vec![CARL.to_string()],
                 mutable: false,
             },
@@ -91,7 +91,7 @@ fn query_member_list() {
 }
 
 #[test]
-fn exec_add_admins() {
+fn exec_change_admin() {
     let mut app = App::default();
 
     let code = ContractWrapper::new(execute, instantiate, query);
@@ -100,9 +100,9 @@ fn exec_add_admins() {
     let addr = app
         .instantiate_contract(
             code_id,
-            Addr::unchecked("owner"),
+            Addr::unchecked( ALICE.to_string()),
             &InstantiateMsg {
-                admins: vec![ALICE.to_string(), Addr::unchecked("owner").to_string()],
+                admin: ALICE.to_string(),
                 members: vec![CARL.to_string()],
                 mutable: true,
             },
@@ -112,92 +112,36 @@ fn exec_add_admins() {
         )
         .unwrap();
 
-    let resp: AdminListResponse = app
+    let resp: AdminResponse = app
         .wrap()
-        .query_wasm_smart(addr.clone(), &QueryMsg::AdminList {})
+        .query_wasm_smart(addr.clone(), &QueryMsg::Admin {})
         .unwrap();
     assert_eq!(
         resp,
-        AdminListResponse {
-            admins: vec![ALICE.to_string(), Addr::unchecked("owner").to_string()],
+        AdminResponse {
+            admin: ALICE.to_string(),
         }
     );
 
-    let msg = ExecuteMsg::AddAdmins { 
-        admins: vec![BOB.to_string()],
+    let msg = ExecuteMsg::ChangeAdmin { 
+        new_admin: BOB.to_string(),
     };
     let _ = app
         .execute_contract(
-            Addr::unchecked("owner"),
+            Addr::unchecked( ALICE.to_string()),
             addr.clone(),
             &msg,
             &[],
         ).unwrap();
     
-    let resp: AdminListResponse = app
+    let resp: AdminResponse = app
         .wrap()
-        .query_wasm_smart(addr.clone(), &QueryMsg::AdminList {})
+        .query_wasm_smart(addr.clone(), &QueryMsg::Admin {})
         .unwrap();
     assert_eq!(
         resp,
-        AdminListResponse {
-            admins: vec![ALICE.to_string(), Addr::unchecked("owner").to_string(), BOB.to_string()],
-        }
-    );
-}
-
-#[test]
-fn exec_remove_admins() {
-    let mut app = App::default();
-
-    let code = ContractWrapper::new(execute, instantiate, query);
-    let code_id = app.store_code(Box::new(code));
-
-    let addr = app
-        .instantiate_contract(
-            code_id,
-            Addr::unchecked("owner"),
-            &InstantiateMsg {
-                admins: vec![ALICE.to_string(), BOB.to_string(), Addr::unchecked("owner").to_string()],
-                members: vec![CARL.to_string()],
-                mutable: true,
-            },
-            &[],
-            "Contract",
-            None,
-        )
-        .unwrap();
-
-    let resp: AdminListResponse = app
-        .wrap()
-        .query_wasm_smart(addr.clone(), &QueryMsg::AdminList {})
-        .unwrap();
-    assert_eq!(
-        resp,
-        AdminListResponse {
-            admins: vec![ALICE.to_string(), BOB.to_string(), Addr::unchecked("owner").to_string()],
-        }
-    );
-
-    let msg = ExecuteMsg::RemoveAdmins { 
-        admins: vec![BOB.to_string()],
-    };
-    let _ = app
-        .execute_contract(
-            Addr::unchecked("owner"),
-            addr.clone(),
-            &msg,
-            &[],
-        ).unwrap();
-    
-    let resp: AdminListResponse = app
-        .wrap()
-        .query_wasm_smart(addr.clone(), &QueryMsg::AdminList {})
-        .unwrap();
-    assert_eq!(
-        resp,
-        AdminListResponse {
-            admins: vec![ALICE.to_string(), Addr::unchecked("owner").to_string()],
+        AdminResponse {
+            admin: BOB.to_string(),
         }
     );
 }
@@ -214,7 +158,7 @@ fn exec_add_members() {
             code_id,
             Addr::unchecked("owner"),
             &InstantiateMsg {
-                admins: vec![Addr::unchecked("owner").to_string()],
+                admin: Addr::unchecked("owner").to_string(),
                 members: vec![ALICE.to_string()],
                 mutable: true,
             },
@@ -270,7 +214,7 @@ fn exec_remove_members() {
             code_id,
             Addr::unchecked("owner"),
             &InstantiateMsg {
-                admins: vec![Addr::unchecked("owner").to_string()],
+                admin: Addr::unchecked("owner").to_string(),
                 members: vec![ALICE.to_string(), BOB.to_string()],
                 mutable: true,
             },
@@ -326,7 +270,7 @@ fn exec_spend_balances() {
             code_id,
             Addr::unchecked("owner"),
             &InstantiateMsg {
-                admins: vec![ALICE.to_string(), Addr::unchecked("owner").to_string()],
+                admin: Addr::unchecked("owner").to_string(),
                 members: vec![CARL.to_string()],
                 mutable: true,
             },
