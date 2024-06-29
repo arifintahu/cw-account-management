@@ -1,5 +1,5 @@
 use cosmwasm_std::{StdResult, Deps};
-use crate::msg::{AdminResponse, MemberListResponse};
+use crate::msg::{AdminResponse, SignerListResponse};
 use crate::state::STATE;
 
 pub fn admin(deps: Deps) -> StdResult<AdminResponse> {
@@ -10,10 +10,10 @@ pub fn admin(deps: Deps) -> StdResult<AdminResponse> {
     Ok(resp)
 }
 
-pub fn member_list(deps: Deps) -> StdResult<MemberListResponse> {
+pub fn signer_list(deps: Deps) -> StdResult<SignerListResponse> {
     let cfg = STATE.load(deps.storage)?;
-    let resp = MemberListResponse{
-        members: cfg.members.into_iter().map(|a| a.into()).collect(),
+    let resp = SignerListResponse{
+        signers: cfg.signers.into_iter().map(|a| a.into()).collect(),
     };
     Ok(resp)
 }

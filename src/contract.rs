@@ -5,8 +5,8 @@ use crate::error::ContractError;
 use crate::helpers::{map_validate, validate_addr};
 use crate::msg::{InstantiateMsg, ExecuteMsg, QueryMsg};
 use crate::state::{State, STATE};
-use crate::execute::{change_admin, add_members, remove_members, spend_balances};
-use crate::query::{admin, member_list};
+use crate::execute::{change_admin, add_signers, remove_signers, spend_balances};
+use crate::query::{admin, signer_list};
 
 // version info for migration info
 const CONTRACT_NAME: &str = "crates.io:cw-account-management";
@@ -22,7 +22,7 @@ pub fn instantiate(
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
     let cfg = State {
         admin: validate_addr(deps.api, &msg.admin)?,
-        members: map_validate(deps.api, &msg.members)?,
+        signers: map_validate(deps.api, &msg.signers)?,
         mutable: msg.mutable,
     };
     STATE.save(deps.storage, &cfg)?;
@@ -39,8 +39,8 @@ pub fn execute(
     match msg {
         ExecuteMsg::Freeze {  } => Ok(Response::new()),
         ExecuteMsg::ChangeAdmin { new_admin } => change_admin(deps, info, new_admin),
-        ExecuteMsg::AddMembers { members } => add_members(deps, info, members),
-        ExecuteMsg::RemoveMembers { members } => remove_members(deps, info, members),
+        ExecuteMsg::AddSigners { signers } => add_signers(deps, info, signers),
+        ExecuteMsg::RemoveSigners { signers } => remove_signers(deps, info, signers),
         ExecuteMsg::SpendBalances { recipient, amount } => spend_balances(deps, info, recipient, amount),
     }
 }
@@ -55,6 +55,6 @@ pub fn query(
 
     match msg {
         Admin {} => to_json_binary(&admin(deps)?),
-        Memberlist {} => to_json_binary(&member_list(deps)?),
+        Signerlist {} => to_json_binary(&signer_list(deps)?),
     }
 }

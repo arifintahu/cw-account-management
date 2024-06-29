@@ -21,10 +21,10 @@ pub fn change_admin(
     Ok(Response::new().add_attribute("action", "change_admin"))
 }
 
-pub fn add_members(
+pub fn add_signers(
     deps: DepsMut,
     info: MessageInfo,
-    members: Vec<String>,
+    signers: Vec<String>,
 ) -> Result<Response, ContractError> {
     let mut curr_state = STATE.load(deps.storage)?;
     if !curr_state.can_modify(info.sender.as_ref()) {
@@ -33,17 +33,17 @@ pub fn add_members(
         });
     }
     
-    let mut members = map_validate(deps.api, &members)?;
-    curr_state.members.append(&mut members);
+    let mut signers = map_validate(deps.api, &signers)?;
+    curr_state.signers.append(&mut signers);
     STATE.save(deps.storage, &curr_state)?;
 
-    Ok(Response::new().add_attribute("action", "add_members"))
+    Ok(Response::new().add_attribute("action", "add_signers"))
 }
 
-pub fn remove_members (
+pub fn remove_signers (
     deps: DepsMut,
     info: MessageInfo,
-    members: Vec<String>,
+    signers: Vec<String>,
 ) -> Result<Response, ContractError> {
     let mut curr_state = STATE.load(deps.storage)?;
     if !curr_state.can_modify(info.sender.as_ref()) {
@@ -51,11 +51,11 @@ pub fn remove_members (
             sender: info.sender,
         });
     }
-    let members = map_validate(deps.api, &members)?;
-    curr_state.members.retain(|curr_member| !members.contains(curr_member));
+    let signers = map_validate(deps.api, &signers)?;
+    curr_state.signers.retain(|curr_member| !signers.contains(curr_member));
     STATE.save(deps.storage, &curr_state)?;
 
-    Ok(Response::new().add_attribute("action", "remove_members"))
+    Ok(Response::new().add_attribute("action", "remove_signers"))
 }
 
 pub fn spend_balances (

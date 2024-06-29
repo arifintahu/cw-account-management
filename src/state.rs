@@ -7,7 +7,7 @@ use cw_storage_plus::Item;
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct State {
     pub admin: Addr,
-    pub members: Vec<Addr>,
+    pub signers: Vec<Addr>,
     pub mutable: bool,
 }
 
@@ -18,10 +18,10 @@ impl State {
         self.admin.as_ref() == addr
     }
 
-    // return true if the address is registered as member
-    pub fn is_member(&self, addr: impl AsRef<str>) -> bool {
+    // return true if the address is registered as signer
+    pub fn is_signer(&self, addr: impl AsRef<str>) -> bool {
         let addr = addr.as_ref();
-        self.members.iter().any(|a| a.as_ref() == addr)
+        self.signers.iter().any(|a| a.as_ref() == addr)
     }
 
     // return true if the address is registered as admin and the config is mutable
@@ -29,9 +29,9 @@ impl State {
         self.mutable && self.is_admin(addr)
     }
 
-    // return true if the address is registered as admin or member
+    // return true if the address is registered as signer
     pub fn can_spend(&self, addr: &str) -> bool {
-        self.is_admin(addr) || self.is_member(addr)
+        self.is_signer(addr)
     }
 }
 

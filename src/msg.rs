@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct InstantiateMsg {
     pub admin: String,
-    pub members: Vec<String>,
+    pub signers: Vec<String>,
     pub mutable: bool,
 }
 
@@ -17,10 +17,10 @@ pub enum ExecuteMsg {
     Freeze {},
     // ChangeAdmin will change current admin to new admin, must be called by a current admin
     ChangeAdmin { new_admin: String },
-    // AddMembers will add members to current members, must be called by an admin
-    AddMembers { members: Vec<String> },
-    // RemoveMembers will remove members from current members, must be called by an admin
-    RemoveMembers { members: Vec<String> },
+    // AddSigners will add signers to current signers, must be called by an admin
+    AddSigners { signers: Vec<String> },
+    // RemoveSigners will remove signers from current signers, must be called by an admin
+    RemoveSigners { signers: Vec<String> },
     // SpendBalance will send token from smarcontract balance to recipient address
     SpendBalances { recipient: String, amount: Vec<Coin> },
 }
@@ -31,8 +31,8 @@ pub enum QueryMsg {
     #[returns(AdminResponse)]
     Admin {},
 
-    #[returns(MemberListResponse)]
-    Memberlist {},
+    #[returns(SignerListResponse)]
+    Signerlist {},
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -43,6 +43,6 @@ pub struct AdminResponse {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-pub struct MemberListResponse {
-    pub members: Vec<String>,
+pub struct SignerListResponse {
+    pub signers: Vec<String>,
 }
