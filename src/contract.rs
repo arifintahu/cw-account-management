@@ -2,8 +2,8 @@ use cosmwasm_std::{entry_point, StdResult, Response, DepsMut, Env, MessageInfo, 
 use cw2::set_contract_version;
 
 use crate::error::ContractError;
-use crate::helpers::{map_validate, validate_addr};
-use crate::msg::{InstantiateMsg, ExecuteMsg, QueryMsg};
+use crate::helpers::{map_validate, validate_addr, is_valid_threshold};
+use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
 use crate::state::{State, STATE};
 use crate::execute::{change_admin, add_signers, remove_signers, spend_balances};
 use crate::query::{admin, signer_list};
@@ -18,11 +18,17 @@ pub fn instantiate(
     _env: Env,
     _info: MessageInfo,
     msg: InstantiateMsg,
-) -> StdResult<Response> {
+) -> Result<Response<Empty>, ContractError> {
+    if !is_valid_threshold(msg.threshold, msg.signers.len()) {
+        return Err(ContractError::InvalidThreshold {
+            threshold: msg.threshold,
+        });
+    }
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
     let cfg = State {
         admin: validate_addr(deps.api, &msg.admin)?,
         signers: map_validate(deps.api, &msg.signers)?,
+        threshold: msg.threshold,
         mutable: msg.mutable,
     };
     STATE.save(deps.storage, &cfg)?;
@@ -51,10 +57,8 @@ pub fn query(
     _env: Env,
     msg: QueryMsg,
 ) -> StdResult<Binary> {
-    use QueryMsg::*;
-
     match msg {
-        Admin {} => to_json_binary(&admin(deps)?),
-        Signerlist {} => to_json_binary(&signer_list(deps)?),
+        QueryMsg::Admin {} => to_json_binary(&admin(deps)?),
+        QueryMsg::Signerlist {} => to_json_binary(&signer_list(deps)?),
     }
 }

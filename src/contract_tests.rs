@@ -36,6 +36,7 @@ fn query_admin() {
             &InstantiateMsg {
                 admin: ALICE.to_string(),
                 signers: vec![CARL.to_string()],
+                threshold: 1,
                 mutable: false,
             },
             &[],
@@ -57,7 +58,7 @@ fn query_admin() {
 }
 
 #[test]
-fn query_member_list() {
+fn query_signer_list() {
     let mut app = App::default();
 
     let code = ContractWrapper::new(execute, instantiate, query);
@@ -70,6 +71,7 @@ fn query_member_list() {
             &InstantiateMsg {
                 admin: ALICE.to_string(),
                 signers: vec![CARL.to_string()],
+                threshold: 1,
                 mutable: false,
             },
             &[],
@@ -104,6 +106,7 @@ fn exec_change_admin() {
             &InstantiateMsg {
                 admin: ALICE.to_string(),
                 signers: vec![CARL.to_string()],
+                threshold: 1,
                 mutable: true,
             },
             &[],
@@ -160,6 +163,7 @@ fn exec_add_signers() {
             &InstantiateMsg {
                 admin: Addr::unchecked("owner").to_string(),
                 signers: vec![ALICE.to_string()],
+                threshold: 1,
                 mutable: true,
             },
             &[],
@@ -216,6 +220,7 @@ fn exec_remove_signers() {
             &InstantiateMsg {
                 admin: Addr::unchecked("owner").to_string(),
                 signers: vec![ALICE.to_string(), BOB.to_string()],
+                threshold: 1,
                 mutable: true,
             },
             &[],
@@ -272,6 +277,7 @@ fn exec_spend_balances() {
             &InstantiateMsg {
                 admin: Addr::unchecked("owner").to_string(),
                 signers: vec![Addr::unchecked("owner").to_string()],
+                threshold: 1,
                 mutable: true,
             },
             &[],

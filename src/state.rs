@@ -8,6 +8,7 @@ use cw_storage_plus::Item;
 pub struct State {
     pub admin: Addr,
     pub signers: Vec<Addr>,
+    pub threshold: u8,
     pub mutable: bool,
 }
 

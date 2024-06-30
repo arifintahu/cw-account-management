@@ -8,4 +8,7 @@ pub enum ContractError {
 
     #[error("{sender} is not contract admin")]
     Unauthorized { sender: Addr },
+
+    #[error("Threshold {threshold} is out of range")]
+    InvalidThreshold { threshold: u8 },
 }

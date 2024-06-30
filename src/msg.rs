@@ -7,6 +7,7 @@ use serde::{Deserialize, Serialize};
 pub struct InstantiateMsg {
     pub admin: String,
     pub signers: Vec<String>,
+    pub threshold: u8,
     pub mutable: bool,
 }
 
