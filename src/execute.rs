@@ -1,7 +1,7 @@
 use cosmwasm_std::{Response, DepsMut, MessageInfo, Coin, BankMsg};
 use crate::error::ContractError;
 use crate::state::STATE;
-use crate::helpers::{map_validate, validate_addr};
+use crate::helpers::{is_valid_threshold, map_validate, validate_addr};
 
 pub fn change_admin(
     deps: DepsMut,
@@ -18,7 +18,39 @@ pub fn change_admin(
     curr_state.admin = validate_addr(deps.api, &new_admin)?;
     STATE.save(deps.storage, &curr_state)?;
 
-    Ok(Response::new().add_attribute("action", "change_admin"))
+    Ok(
+        Response::new()
+            .add_attribute("action", "change_admin")
+            .add_attribute("new_admin", new_admin)
+    )
+}
+
+pub fn change_threshold(
+    deps: DepsMut,
+    info: MessageInfo,
+    new_threshold: u8,
+) -> Result<Response, ContractError> {
+    let mut curr_state = STATE.load(deps.storage)?;
+    if !curr_state.can_modify(info.sender.as_ref()) {
+        return Err(ContractError::Unauthorized {
+            sender: info.sender,
+        });
+    }
+
+    if !is_valid_threshold(new_threshold, curr_state.signers.len()) {
+        return Err(ContractError::InvalidThreshold {
+            threshold: new_threshold,
+        });
+    }
+    
+    curr_state.threshold = new_threshold;
+    STATE.save(deps.storage, &curr_state)?;
+
+    Ok(
+        Response::new()
+            .add_attribute("action", "change_threshold")
+            .add_attribute("new_threshold", new_threshold.to_string())
+    )
 }
 
 pub fn add_signers(

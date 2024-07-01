@@ -1,6 +1,6 @@
 use cosmwasm_std::{coin, Uint128, Addr};
 use cw_multi_test::{App, ContractWrapper, Executor, AppBuilder};
-use crate::msg::{InstantiateMsg, ExecuteMsg, QueryMsg, AdminResponse, SignerListResponse};
+use crate::msg::{AdminResponse, ExecuteMsg, InstantiateMsg, QueryMsg, SignerListResponse, ThresholdResponse};
 use crate::contract::{instantiate, query, execute};
 
 const ALICE: &str = "alice";
@@ -145,6 +145,52 @@ fn exec_change_admin() {
         resp,
         AdminResponse {
             admin: BOB.to_string(),
+        }
+    );
+}
+
+#[test]
+fn exec_change_threshold() {
+    let mut app = App::default();
+
+    let code = ContractWrapper::new(execute, instantiate, query);
+    let code_id = app.store_code(Box::new(code));
+
+    let addr = app
+        .instantiate_contract(
+            code_id,
+            Addr::unchecked( ALICE.to_string()),
+            &InstantiateMsg {
+                admin: ALICE.to_string(),
+                signers: vec![ALICE.to_string(), CARL.to_string()],
+                threshold: 1,
+                mutable: true,
+            },
+            &[],
+            "Contract",
+            None,
+        )
+        .unwrap();
+
+    let msg = ExecuteMsg::ChangeThreshold { 
+        new_threshold: 2,
+    };
+    let _ = app
+        .execute_contract(
+            Addr::unchecked( ALICE.to_string()),
+            addr.clone(),
+            &msg,
+            &[],
+        ).unwrap();
+    
+    let resp: ThresholdResponse = app
+        .wrap()
+        .query_wasm_smart(addr.clone(), &QueryMsg::Threshold {})
+        .unwrap();
+    assert_eq!(
+        resp,
+        ThresholdResponse {
+            threshold: 2
         }
     );
 }

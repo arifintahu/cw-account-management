@@ -18,6 +18,8 @@ pub enum ExecuteMsg {
     Freeze {},
     // ChangeAdmin will change current admin to new admin, must be called by a current admin
     ChangeAdmin { new_admin: String },
+    // ChangeThreshold will change current threshold to new threshold, must be called by a current admin
+    ChangeThreshold { new_threshold: u8 },
     // AddSigners will add signers to current signers, must be called by an admin
     AddSigners { signers: Vec<String> },
     // RemoveSigners will remove signers from current signers, must be called by an admin
@@ -34,6 +36,9 @@ pub enum QueryMsg {
 
     #[returns(SignerListResponse)]
     Signerlist {},
+
+    #[returns(ThresholdResponse)]
+    Threshold {},
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -46,4 +51,10 @@ pub struct AdminResponse {
 #[serde(rename_all = "snake_case")]
 pub struct SignerListResponse {
     pub signers: Vec<String>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct ThresholdResponse {
+    pub threshold: u8,
 }
