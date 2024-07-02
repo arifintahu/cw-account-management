@@ -34,6 +34,15 @@ impl State {
     pub fn can_spend(&self, addr: &str) -> bool {
         self.is_signer(addr)
     }
+
+    // return true if the address is registered as signer
+    pub fn can_execute(&self, addr: &str) -> bool {
+        self.is_signer(addr)
+    }
 }
 
 pub const STATE: Item<State> = Item::new("state");
+
+pub struct AccountTx {
+    
+}

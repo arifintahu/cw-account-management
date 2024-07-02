@@ -1,4 +1,7 @@
-use cosmwasm_std::{Response, DepsMut, MessageInfo, Coin, BankMsg};
+use std::fmt;
+
+use cosmwasm_std::{BankMsg, Coin, CosmosMsg, DepsMut, MessageInfo, Response};
+use schemars::JsonSchema;
 use crate::error::ContractError;
 use crate::state::STATE;
 use crate::helpers::{is_valid_threshold, map_validate, validate_addr};
@@ -110,5 +113,26 @@ pub fn spend_balances (
         .add_attribute("action", "spend_balances")
         .add_attribute("recipient", recipient)
         .add_message(msg);
+    Ok(res)
+}
+
+pub fn execute_messages<T>(
+    deps: DepsMut,
+    info: MessageInfo,
+    msgs: Vec<CosmosMsg<T>>,
+) -> Result<Response<T>, ContractError>
+where
+    T: Clone + fmt::Debug + PartialEq + JsonSchema,
+{
+    let curr_state = STATE.load(deps.storage)?;
+    if !curr_state.can_execute(info.sender.as_ref()) {
+        return Err(ContractError::Unauthorized {
+            sender: info.sender,
+        });
+    }
+
+    let res = Response::new()
+        .add_messages(msgs)
+        .add_attribute("action", "execute_messages");
     Ok(res)
 }
