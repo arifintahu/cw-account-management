@@ -4,13 +4,14 @@ use cw2::set_contract_version;
 use crate::error::ContractError;
 use crate::helpers::{map_validate, validate_addr, is_valid_threshold};
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
-use crate::state::{State, STATE};
+use crate::state::{State, STATE, TX_NEXT_ID};
 use crate::execute::{add_signers, change_admin, change_threshold, execute_messages, remove_signers, spend_balances};
 use crate::query::{admin, signer_list, threshold};
 
 // version info for migration info
 const CONTRACT_NAME: &str = "crates.io:cw-account-management";
 const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
+const INIT_TX_ID: u16 = 1;
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
@@ -32,6 +33,7 @@ pub fn instantiate(
         mutable: msg.mutable,
     };
     STATE.save(deps.storage, &cfg)?;
+    TX_NEXT_ID.save(deps.storage, &INIT_TX_ID)?;
     Ok(Response::default())
 }
 

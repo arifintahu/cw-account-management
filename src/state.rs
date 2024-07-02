@@ -1,7 +1,9 @@
+use std::fmt;
+
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-use cosmwasm_std::Addr;
+use cosmwasm_std::{Addr, CosmosMsg, Empty};
 use cw_storage_plus::Item;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -43,6 +45,23 @@ impl State {
 
 pub const STATE: Item<State> = Item::new("state");
 
-pub struct AccountTx {
-    
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub enum TxStatus {
+    Pending,
+    Done,
+    Failed,
 }
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct TxExecution<T = Empty> 
+where
+    T: Clone + fmt::Debug + PartialEq + JsonSchema,
+{
+    pub id: u16,
+    pub msgs: Vec<CosmosMsg<T>>,
+    pub signers: Vec<Addr>,
+    pub status: Option<TxStatus>,
+}
+
+pub const TX_NEXT_ID: Item<u16> = Item::new("tx_next_id");
+pub const TX_EXECUTIONS: Item<Vec<TxExecution>> = Item::new("tx_executions");
