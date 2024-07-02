@@ -49,6 +49,7 @@ pub fn execute(
         ExecuteMsg::AddSigners { signers } => add_signers(deps, info, signers),
         ExecuteMsg::RemoveSigners { signers } => remove_signers(deps, info, signers),
         ExecuteMsg::SpendBalances { recipient, amount } => spend_balances(deps, info, recipient, amount),
+        ExecuteMsg::ExecuteMessages { msgs } => Ok(Response::new()),
     }
 }
 

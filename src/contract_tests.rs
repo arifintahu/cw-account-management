@@ -1,4 +1,4 @@
-use cosmwasm_std::{coin, Uint128, Addr};
+use cosmwasm_std::{coin, Addr, Empty, Uint128};
 use cw_multi_test::{App, ContractWrapper, Executor, AppBuilder};
 use crate::msg::{AdminResponse, ExecuteMsg, InstantiateMsg, QueryMsg, SignerListResponse, ThresholdResponse};
 use crate::contract::{instantiate, query, execute};
@@ -126,7 +126,7 @@ fn exec_change_admin() {
         }
     );
 
-    let msg = ExecuteMsg::ChangeAdmin { 
+    let msg: ExecuteMsg<Empty> = ExecuteMsg::ChangeAdmin { 
         new_admin: BOB.to_string(),
     };
     let _ = app
@@ -172,7 +172,7 @@ fn exec_change_threshold() {
         )
         .unwrap();
 
-    let msg = ExecuteMsg::ChangeThreshold { 
+    let msg: ExecuteMsg<Empty> = ExecuteMsg::ChangeThreshold { 
         new_threshold: 2,
     };
     let _ = app
@@ -229,7 +229,7 @@ fn exec_add_signers() {
         }
     );
 
-    let msg = ExecuteMsg::AddSigners { 
+    let msg: ExecuteMsg<Empty> = ExecuteMsg::AddSigners { 
         signers: vec![BOB.to_string()],
     };
     let _ = app
@@ -286,7 +286,7 @@ fn exec_remove_signers() {
         }
     );
 
-    let msg = ExecuteMsg::RemoveSigners { 
+    let msg: ExecuteMsg<Empty> = ExecuteMsg::RemoveSigners { 
         signers: vec![BOB.to_string()],
     };
     let _ = app
@@ -337,7 +337,7 @@ fn exec_spend_balances() {
     assert_eq!(balance.amount, Uint128::new(10000));
     assert_eq!(balance.denom, DENOM);
 
-    let msg = ExecuteMsg::SpendBalances {
+    let msg: ExecuteMsg<Empty> = ExecuteMsg::SpendBalances {
         recipient: CARL.to_string(),
         amount: vec![coin(1000, DENOM)],
     };

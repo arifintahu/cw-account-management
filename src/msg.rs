@@ -1,5 +1,7 @@
+use std::fmt;
+
 use cosmwasm_schema::QueryResponses;
-use cosmwasm_std::Coin;
+use cosmwasm_std::{Coin, CosmosMsg, Empty};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -13,7 +15,10 @@ pub struct InstantiateMsg {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-pub enum ExecuteMsg {
+pub enum ExecuteMsg<T = Empty> 
+where
+    T: Clone + fmt::Debug + PartialEq + JsonSchema,
+{
     // Freeze will make a mutable contact immutable, must be called by an admin
     Freeze {},
     // ChangeAdmin will change current admin to new admin, must be called by a current admin
@@ -26,6 +31,10 @@ pub enum ExecuteMsg {
     RemoveSigners { signers: Vec<String> },
     // SpendBalance will send token from smarcontract balance to recipient address
     SpendBalances { recipient: String, amount: Vec<Coin> },
+    /// Execute requests the contract to re-dispatch all these messages with the
+    /// contract's address as sender. Every implementation has it's own logic to
+    /// determine in
+    ExecuteMessages { msgs: Vec<CosmosMsg<T>> },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema, QueryResponses)]
