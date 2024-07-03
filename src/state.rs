@@ -4,7 +4,7 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use cosmwasm_std::{Addr, CosmosMsg, Empty};
-use cw_storage_plus::Item;
+use cw_storage_plus::{Item, Map};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct State {
@@ -53,7 +53,7 @@ pub enum TxStatus {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct TxExecution<T = Empty> 
+pub struct TxData<T = Empty> 
 where
     T: Clone + fmt::Debug + PartialEq + JsonSchema,
 {
@@ -64,4 +64,4 @@ where
 }
 
 pub const TX_NEXT_ID: Item<u16> = Item::new("tx_next_id");
-pub const TX_EXECUTIONS: Item<Vec<TxExecution>> = Item::new("tx_executions");
+pub const TX_EXECUTION: Map<u16, TxData> = Map::new("tx_execution");
