@@ -3,7 +3,7 @@ use std::fmt;
 use cosmwasm_std::{BankMsg, Coin, CosmosMsg, DepsMut, MessageInfo, Response};
 use schemars::JsonSchema;
 use crate::error::ContractError;
-use crate::state::STATE;
+use crate::state::{TxData, TxStatus, STATE};
 use crate::helpers::{is_valid_threshold, map_validate, validate_addr};
 
 pub fn change_admin(
@@ -131,8 +131,22 @@ where
         });
     }
 
-    let res = Response::new()
-        .add_messages(msgs)
-        .add_attribute("action", "execute_messages");
-    Ok(res)
+     if curr_state.threshold == 1 {
+        // let tx_data = TxData::new(deps, msgs, info.sender.clone(), TxStatus::Done);
+        let res = Response::new()
+            .add_messages(msgs)
+            .add_attribute("action", "execute_messages");
+        Ok(res)
+
+     } else if curr_state.threshold > 1 {
+        let res = Response::new()
+            .add_messages(msgs)
+            .add_attribute("action", "execute_messages");
+        Ok(res)
+
+     } else {
+        return Err(ContractError::InvalidThreshold {
+            threshold: curr_state.threshold,
+        });
+     }
 }

@@ -3,7 +3,7 @@ use std::fmt;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-use cosmwasm_std::{Addr, CosmosMsg, Empty};
+use cosmwasm_std::{Addr, CosmosMsg, DepsMut, Empty};
 use cw_storage_plus::{Item, Map};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -62,6 +62,29 @@ where
     pub signers: Vec<Addr>,
     pub status: Option<TxStatus>,
 }
+
+// impl TxData {
+//     pub fn new<T>(
+//         deps: DepsMut,
+//         msgs: Vec<CosmosMsg<T>>,
+//         signer: Addr,
+//         status: TxStatus,
+//     ) -> Self 
+//     where
+//         T: Clone + fmt::Debug + PartialEq + JsonSchema,
+//     {
+//         let curr_id = TX_NEXT_ID.load(deps.storage).unwrap_or_default();
+//         let tx_data = TxData{
+//             id: curr_id,
+//             msgs: msgs,
+//             signers: vec![signer],
+//             status: Some(status),
+//         };
+//         TX_NEXT_ID.save(deps.storage, &(curr_id + 1));
+
+//         return tx_data;
+//     }
+// }
 
 pub const TX_NEXT_ID: Item<u16> = Item::new("tx_next_id");
 pub const TX_EXECUTION: Map<u16, TxData> = Map::new("tx_execution");
