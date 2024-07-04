@@ -5,7 +5,7 @@ use crate::error::ContractError;
 use crate::helpers::{map_validate, validate_addr, is_valid_threshold};
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
 use crate::state::{State, STATE, TX_NEXT_ID};
-use crate::execute::{add_signers, change_admin, change_threshold, execute_transaction, remove_signers, spend_balances};
+use crate::execute::{add_signers, change_admin, change_threshold, execute_transaction, remove_signers, sign_transaction, spend_balances};
 use crate::query::{admin, signer_list, threshold, tx_executions};
 
 // version info for migration info
@@ -52,7 +52,7 @@ pub fn execute(
         ExecuteMsg::RemoveSigners { signers } => remove_signers(deps, info, signers),
         ExecuteMsg::SpendBalances { recipient, amount } => spend_balances(deps, info, recipient, amount),
         ExecuteMsg::ExecuteTransaction { msgs } => execute_transaction(deps, info, msgs),
-        ExecuteMsg::SignTransaction { tx_id } => Ok(Response::new()),
+        ExecuteMsg::SignTransaction { tx_id } => sign_transaction(deps, info, tx_id),
     }
 }
 

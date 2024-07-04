@@ -399,7 +399,7 @@ fn exec_execute_transaction() {
             &msg,
             &[],
         ).unwrap();
-    assert_eq!(res.events[1].attributes, [("_contract_addr", "contract0"), ("action", "execute_messages"), ("tx_id", "1")]);
+    assert_eq!(res.events[1].attributes, [("_contract_addr", "contract0"), ("action", "execute_transaction"), ("tx_id", "1")]);
     
     let balance = app.wrap().query_balance(CARL.to_string(), DENOM).unwrap();
     assert_eq!(balance.amount, Uint128::new(1000));

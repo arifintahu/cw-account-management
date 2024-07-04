@@ -11,4 +11,7 @@ pub enum ContractError {
 
     #[error("Threshold {threshold} is out of range")]
     InvalidThreshold { threshold: u8 },
+
+    #[error("Status {tx_id} is not allowed")]
+    InvalidStatus { tx_id: u16 },
 }

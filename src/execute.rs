@@ -1,7 +1,7 @@
 use cosmwasm_std::{BankMsg, Coin, CosmosMsg, DepsMut, MessageInfo, Response};
 use crate::error::ContractError;
 use crate::state::{TxData, TxStatus, STATE, TX_EXECUTION, TX_NEXT_ID};
-use crate::helpers::{is_valid_threshold, map_validate, validate_addr};
+use crate::helpers::{is_sufficient_signers, is_valid_threshold, map_validate, validate_addr};
 
 pub fn change_admin(
     deps: DepsMut,
@@ -135,7 +135,7 @@ pub fn execute_transaction(
         Ok(
             Response::new()
                 .add_messages(msgs.clone())
-                .add_attribute("action", "execute_messages")
+                .add_attribute("action", "execute_transaction")
                 .add_attribute("tx_id", curr_id.to_string())
         )
      } else if curr_state.threshold > 1 {
@@ -147,7 +147,7 @@ pub fn execute_transaction(
 
         Ok(
             Response::new()
-                .add_attribute("action", "execute_messages")
+                .add_attribute("action", "execute_transaction")
                 .add_attribute("tx_id", curr_id.to_string())
         )
      } else {
@@ -155,4 +155,45 @@ pub fn execute_transaction(
             threshold: curr_state.threshold,
         });
      }
+}
+
+pub fn sign_transaction(
+    deps: DepsMut,
+    info: MessageInfo,
+    tx_id: u16,
+) -> Result<Response, ContractError> {
+    let curr_state = STATE.load(deps.storage)?;
+    if !curr_state.can_execute(info.sender.as_ref()) {
+        return Err(ContractError::Unauthorized {
+            sender: info.sender,
+        });
+    }
+
+    let mut tx = TX_EXECUTION.load(deps.storage, tx_id)?;
+    if tx.status != Some(TxStatus::Pending) {
+        return Err(ContractError::InvalidStatus {
+            tx_id,
+        });
+    }
+
+    tx.signers.push(info.sender.clone());
+
+    let res = Response::new();
+    if is_sufficient_signers(curr_state.threshold, tx.signers.len()) {
+        tx.status = Some(TxStatus::Done);
+        TX_EXECUTION.save(deps.storage, tx.id, &tx)?;
+        Ok(
+            res
+                .add_messages(tx.msgs)
+                .add_attribute("action", "sign_transaction")
+                .add_attribute("tx_id", tx_id.to_string())
+        )
+    } else {
+        TX_EXECUTION.save(deps.storage, tx.id, &tx)?;
+        Ok(
+            res
+                .add_attribute("action", "sign_transaction")
+                .add_attribute("tx_id", tx_id.to_string())
+        )
+    }
 }
