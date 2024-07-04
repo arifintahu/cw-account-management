@@ -355,7 +355,7 @@ fn exec_spend_balances() {
 }
 
 #[test]
-fn exec_execute_messages() {
+fn exec_execute_transaction() {
     let mut app = mock_app();
 
     let code = ContractWrapper::new(execute, instantiate, query);
@@ -389,7 +389,7 @@ fn exec_execute_messages() {
         }
         .into(),
     ];
-    let msg: ExecuteMsg<Empty> = ExecuteMsg::ExecuteMessages {
+    let msg: ExecuteMsg<Empty> = ExecuteMsg::ExecuteTransaction {
         msgs: messages,
     };
     let res = app

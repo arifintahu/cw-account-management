@@ -36,7 +36,9 @@ where
     /// Execute requests the contract to re-dispatch all these messages with the
     /// contract's address as sender. Every implementation has it's own logic to
     /// determine in
-    ExecuteMessages { msgs: Vec<CosmosMsg<T>> },
+    ExecuteTransaction{ msgs: Vec<CosmosMsg<T>> },
+    // SignMessage will sign transaction execution in pending period
+    SignTransaction { tx_id: u16 },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema, QueryResponses)]

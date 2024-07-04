@@ -113,7 +113,7 @@ pub fn spend_balances (
     Ok(res)
 }
 
-pub fn execute_messages(
+pub fn execute_transaction(
     deps: DepsMut,
     info: MessageInfo,
     msgs: Vec<CosmosMsg>,
