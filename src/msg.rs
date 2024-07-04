@@ -5,6 +5,8 @@ use cosmwasm_std::{Coin, CosmosMsg, Empty};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
+use crate::state::TxData;
+
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct InstantiateMsg {
     pub admin: String,
@@ -48,6 +50,9 @@ pub enum QueryMsg {
 
     #[returns(ThresholdResponse)]
     Threshold {},
+
+    #[returns(ThresholdResponse)]
+    TxExecutions {},
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -66,4 +71,10 @@ pub struct SignerListResponse {
 #[serde(rename_all = "snake_case")]
 pub struct ThresholdResponse {
     pub threshold: u8,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct TxExecutionsResponse {
+    pub tx_executions: Vec<TxData>,
 }

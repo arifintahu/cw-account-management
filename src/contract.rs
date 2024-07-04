@@ -6,7 +6,7 @@ use crate::helpers::{map_validate, validate_addr, is_valid_threshold};
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
 use crate::state::{State, STATE, TX_NEXT_ID};
 use crate::execute::{add_signers, change_admin, change_threshold, execute_messages, remove_signers, spend_balances};
-use crate::query::{admin, signer_list, threshold};
+use crate::query::{admin, signer_list, threshold, tx_executions};
 
 // version info for migration info
 const CONTRACT_NAME: &str = "crates.io:cw-account-management";
@@ -65,5 +65,6 @@ pub fn query(
         QueryMsg::Admin {} => to_json_binary(&admin(deps)?),
         QueryMsg::Threshold {} => to_json_binary(&threshold(deps)?),
         QueryMsg::Signerlist {} => to_json_binary(&signer_list(deps)?),
+        QueryMsg::TxExecutions {} => to_json_binary(&tx_executions(deps)?),
     }
 }

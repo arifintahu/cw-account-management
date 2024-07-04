@@ -1,9 +1,6 @@
-use std::fmt;
-
 use cosmwasm_std::{BankMsg, Coin, CosmosMsg, DepsMut, MessageInfo, Response};
-use schemars::JsonSchema;
 use crate::error::ContractError;
-use crate::state::{TxData, TxStatus, STATE};
+use crate::state::{TxData, TxStatus, STATE, TX_EXECUTION, TX_NEXT_ID};
 use crate::helpers::{is_valid_threshold, map_validate, validate_addr};
 
 pub fn change_admin(
@@ -116,14 +113,11 @@ pub fn spend_balances (
     Ok(res)
 }
 
-pub fn execute_messages<T>(
+pub fn execute_messages(
     deps: DepsMut,
     info: MessageInfo,
-    msgs: Vec<CosmosMsg<T>>,
-) -> Result<Response<T>, ContractError>
-where
-    T: Clone + fmt::Debug + PartialEq + JsonSchema,
-{
+    msgs: Vec<CosmosMsg>,
+) -> Result<Response, ContractError> {
     let curr_state = STATE.load(deps.storage)?;
     if !curr_state.can_execute(info.sender.as_ref()) {
         return Err(ContractError::Unauthorized {
@@ -132,12 +126,17 @@ where
     }
 
      if curr_state.threshold == 1 {
-        // let tx_data = TxData::new(deps, msgs, info.sender.clone(), TxStatus::Done);
         let res = Response::new()
-            .add_messages(msgs)
+            .add_messages(msgs.clone())
             .add_attribute("action", "execute_messages");
-        Ok(res)
 
+        let curr_id = TX_NEXT_ID.load(deps.storage).unwrap_or_default();
+        let tx_data = TxData::new(curr_id, msgs.clone(), info.sender.clone(), TxStatus::Done);
+        
+        TX_EXECUTION.save(deps.storage, tx_data.id, &tx_data)?;
+        TX_NEXT_ID.save(deps.storage, &(curr_id + 1))?;
+        
+        Ok(res)
      } else if curr_state.threshold > 1 {
         let res = Response::new()
             .add_messages(msgs)
