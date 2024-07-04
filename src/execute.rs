@@ -126,23 +126,30 @@ pub fn execute_messages(
     }
 
      if curr_state.threshold == 1 {
-        let res = Response::new()
-            .add_messages(msgs.clone())
-            .add_attribute("action", "execute_messages");
-
         let curr_id = TX_NEXT_ID.load(deps.storage).unwrap_or_default();
         let tx_data = TxData::new(curr_id, msgs.clone(), info.sender.clone(), TxStatus::Done);
         
         TX_EXECUTION.save(deps.storage, tx_data.id, &tx_data)?;
         TX_NEXT_ID.save(deps.storage, &(curr_id + 1))?;
         
-        Ok(res)
+        Ok(
+            Response::new()
+                .add_messages(msgs.clone())
+                .add_attribute("action", "execute_messages")
+                .add_attribute("tx_id", curr_id.to_string())
+        )
      } else if curr_state.threshold > 1 {
-        let res = Response::new()
-            .add_messages(msgs)
-            .add_attribute("action", "execute_messages");
-        Ok(res)
+        let curr_id = TX_NEXT_ID.load(deps.storage).unwrap_or_default();
+        let tx_data = TxData::new(curr_id, msgs.clone(), info.sender.clone(), TxStatus::Pending);
+        
+        TX_EXECUTION.save(deps.storage, tx_data.id, &tx_data)?;
+        TX_NEXT_ID.save(deps.storage, &(curr_id + 1))?;
 
+        Ok(
+            Response::new()
+                .add_attribute("action", "execute_messages")
+                .add_attribute("tx_id", curr_id.to_string())
+        )
      } else {
         return Err(ContractError::InvalidThreshold {
             threshold: curr_state.threshold,
