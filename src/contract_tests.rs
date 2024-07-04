@@ -2,6 +2,7 @@ use cosmwasm_std::{coin, Addr, BankMsg, Empty, Uint128};
 use cw_multi_test::{App, ContractWrapper, Executor, AppBuilder};
 use crate::msg::{AdminResponse, ExecuteMsg, InstantiateMsg, QueryMsg, SignerListResponse, ThresholdResponse, TxExecutionsResponse};
 use crate::contract::{instantiate, query, execute};
+use crate::state::TxStatus;
 
 const ALICE: &str = "alice";
 const BOB: &str = "bob";
@@ -412,5 +413,87 @@ fn exec_execute_transaction() {
     assert_eq!(
         resp.tx_executions.len(),
         1
+    );
+}
+
+#[test]
+fn exec_sign_transaction() {
+    let mut app = mock_app();
+
+    let code = ContractWrapper::new(execute, instantiate, query);
+    let code_id = app.store_code(Box::new(code));
+
+    let addr = app
+        .instantiate_contract(
+            code_id,
+            Addr::unchecked("owner"),
+            &InstantiateMsg {
+                admin: Addr::unchecked("owner").to_string(),
+                signers: vec![Addr::unchecked("owner").to_string(), ALICE.to_string()],
+                threshold: 2,
+                mutable: true,
+            },
+            &[],
+            "Contract",
+            None,
+        )
+        .unwrap();
+
+    let _ = app.send_tokens(Addr::unchecked("owner"), addr.clone(), &[coin(10000, DENOM)]);
+    let balance = app.wrap().query_balance(addr.clone(), DENOM).unwrap();
+    assert_eq!(balance.amount, Uint128::new(10000));
+    assert_eq!(balance.denom, DENOM);
+    
+    let messages = vec![
+        BankMsg::Send {
+            to_address: CARL.to_string(),
+            amount: vec![coin(1000, DENOM)],
+        }
+        .into(),
+    ];
+    let msg: ExecuteMsg<Empty> = ExecuteMsg::ExecuteTransaction {
+        msgs: messages,
+    };
+    let res = app
+        .execute_contract(
+            Addr::unchecked("owner"),
+            addr.clone(),
+            &msg,
+            &[],
+        ).unwrap();
+    assert_eq!(res.events[1].attributes, [("_contract_addr", "contract0"), ("action", "execute_transaction"), ("tx_id", "1")]);
+    
+    let resp: TxExecutionsResponse = app
+        .wrap()
+        .query_wasm_smart(addr.clone(), &QueryMsg::TxExecutions {})
+        .unwrap();
+    assert_eq!(
+        resp.tx_executions[0].status,
+        Some(TxStatus::Pending),
+    );
+
+    let msg: ExecuteMsg<Empty> = ExecuteMsg::SignTransaction {
+        tx_id: 1,
+    };
+    let res = app
+        .execute_contract(
+            Addr::unchecked(ALICE.to_string()),
+            addr.clone(),
+            &msg,
+            &[],
+        ).unwrap();
+    assert_eq!(res.events[1].attributes, [("_contract_addr", "contract0"), ("action", "sign_transaction"), ("tx_id", "1")]);
+
+    let balance = app.wrap().query_balance(CARL.to_string(), DENOM).unwrap();
+    assert_eq!(balance.amount, Uint128::new(1000));
+    assert_eq!(balance.denom, DENOM);
+
+    let resp: TxExecutionsResponse = app
+        .wrap()
+        .query_wasm_smart(addr.clone(), &QueryMsg::TxExecutions {})
+        .unwrap();
+    assert_eq!(
+        resp.tx_executions[0].status,
+        Some(TxStatus::Done),
     );
 }

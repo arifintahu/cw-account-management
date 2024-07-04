@@ -12,7 +12,7 @@
 - [x] add/remove signers
 - [x] change threshold
 - [x] execute account tx
-- [ ] sign account tx by signer
+- [x] sign account tx by signer
 - [ ] add/remove whitelist addresses
 - [ ] add/remove transfer limit
 - [ ] add balance to smartcontract
