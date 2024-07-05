@@ -1,12 +1,18 @@
-use cosmwasm_std::{entry_point, StdResult, Response, DepsMut, Env, MessageInfo, Deps, Binary, Empty, to_json_binary};
+use cosmwasm_std::{
+    entry_point, StdResult, Response, DepsMut, Env, MessageInfo, Deps,
+    Binary, Empty, to_json_binary,
+};
 use cw2::set_contract_version;
 
 use crate::error::ContractError;
 use crate::helpers::{map_validate, validate_addr, is_valid_threshold};
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
 use crate::state::{State, STATE, TX_NEXT_ID};
-use crate::execute::{add_signers, change_admin, change_threshold, execute_transaction, remove_signers, sign_transaction, spend_balances};
-use crate::query::{admin, signer_list, threshold, tx_executions};
+use crate::execute::{
+    add_signers, change_admin, change_threshold, execute_transaction, 
+    freeze, remove_signers, sign_transaction, spend_balances,
+};
+use crate::query::{admin, mutable, signer_list, threshold, tx_executions};
 
 // version info for migration info
 const CONTRACT_NAME: &str = "crates.io:cw-account-management";
@@ -45,7 +51,7 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> Result<Response<Empty>, ContractError> {
     match msg {
-        ExecuteMsg::Freeze {  } => Ok(Response::new()),
+        ExecuteMsg::Freeze {  } => freeze(deps, info),
         ExecuteMsg::ChangeAdmin { new_admin } => change_admin(deps, info, new_admin),
         ExecuteMsg::ChangeThreshold { new_threshold } => change_threshold(deps, info, new_threshold),
         ExecuteMsg::AddSigners { signers } => add_signers(deps, info, signers),
@@ -67,5 +73,6 @@ pub fn query(
         QueryMsg::Threshold {} => to_json_binary(&threshold(deps)?),
         QueryMsg::Signerlist {} => to_json_binary(&signer_list(deps)?),
         QueryMsg::TxExecutions {} => to_json_binary(&tx_executions(deps)?),
+        QueryMsg::Mutable {} => to_json_binary(&mutable(deps)?),
     }
 }

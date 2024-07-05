@@ -55,6 +55,9 @@ pub enum QueryMsg {
 
     #[returns(ThresholdResponse)]
     TxExecutions {},
+
+    #[returns(MutableResponse)]
+    Mutable {},
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -79,4 +82,10 @@ pub struct ThresholdResponse {
 #[serde(rename_all = "snake_case")]
 pub struct TxExecutionsResponse {
     pub tx_executions: Vec<TxData>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct MutableResponse {
+    pub mutable: bool,
 }

@@ -1,6 +1,10 @@
 use cosmwasm_std::{coin, Addr, BankMsg, Empty, Uint128};
 use cw_multi_test::{App, ContractWrapper, Executor, AppBuilder};
-use crate::msg::{AdminResponse, ExecuteMsg, InstantiateMsg, QueryMsg, SignerListResponse, ThresholdResponse, TxExecutionsResponse};
+use crate::msg::{
+    AdminResponse, ExecuteMsg, InstantiateMsg, MutableResponse,
+    QueryMsg, SignerListResponse, ThresholdResponse,
+    TxExecutionsResponse,
+};
 use crate::contract::{instantiate, query, execute};
 use crate::state::TxStatus;
 
@@ -91,6 +95,61 @@ fn query_signer_list() {
             signers: vec![CARL.to_string()],
         }
     )
+}
+
+#[test]
+fn exec_freeze() {
+    let mut app = App::default();
+
+    let code = ContractWrapper::new(execute, instantiate, query);
+    let code_id = app.store_code(Box::new(code));
+
+    let addr = app
+        .instantiate_contract(
+            code_id,
+            Addr::unchecked( "owner"),
+            &InstantiateMsg {
+                admin: Addr::unchecked( "owner").to_string(),
+                signers: vec![Addr::unchecked( "owner").to_string()],
+                threshold: 1,
+                mutable: true,
+            },
+            &[],
+            "Contract",
+            None,
+        )
+        .unwrap();
+
+    let resp: MutableResponse = app
+        .wrap()
+        .query_wasm_smart(addr.clone(), &QueryMsg::Mutable {})
+        .unwrap();
+    assert_eq!(
+        resp,
+        MutableResponse {
+            mutable: true,
+        }
+    );
+
+    let msg: ExecuteMsg<Empty> = ExecuteMsg::Freeze {};
+    let _ = app
+        .execute_contract(
+            Addr::unchecked( "owner"),
+            addr.clone(),
+            &msg,
+            &[],
+        ).unwrap();
+    
+    let resp: MutableResponse = app
+        .wrap()
+        .query_wasm_smart(addr.clone(), &QueryMsg::Mutable {})
+        .unwrap();
+    assert_eq!(
+        resp,
+        MutableResponse {
+            mutable: false,
+        }
+    );
 }
 
 #[test]

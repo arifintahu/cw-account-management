@@ -8,6 +8,7 @@
 - [ ] transfer limit
 
 # Execute
+- [x] freeze
 - [x] change admin
 - [x] add/remove signers
 - [x] change threshold
@@ -26,3 +27,4 @@
 - [ ] query whitelist-addresses
 - [ ] query transfer limit
 - [x] query tx executions
+- [x] query mutable
