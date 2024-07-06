@@ -370,51 +370,6 @@ fn exec_remove_signers() {
 }
 
 #[test]
-fn exec_spend_balances() {
-    let mut app = mock_app();
-
-    let code = ContractWrapper::new(execute, instantiate, query);
-    let code_id = app.store_code(Box::new(code));
-
-    let addr = app
-        .instantiate_contract(
-            code_id,
-            Addr::unchecked("owner"),
-            &InstantiateMsg {
-                admin: Addr::unchecked("owner").to_string(),
-                signers: vec![Addr::unchecked("owner").to_string()],
-                threshold: 1,
-                mutable: true,
-            },
-            &[],
-            "Contract",
-            None,
-        )
-        .unwrap();
-
-    let _ = app.send_tokens(Addr::unchecked("owner"), addr.clone(), &[coin(10000, DENOM)]);
-    let balance = app.wrap().query_balance(addr.clone(), DENOM).unwrap();
-    assert_eq!(balance.amount, Uint128::new(10000));
-    assert_eq!(balance.denom, DENOM);
-
-    let msg: ExecuteMsg<Empty> = ExecuteMsg::SpendBalances {
-        recipient: CARL.to_string(),
-        amount: vec![coin(1000, DENOM)],
-    };
-    let _ = app
-        .execute_contract(
-            Addr::unchecked("owner"),
-            addr.clone(),
-            &msg,
-            &[],
-        ).unwrap();
-    
-    let balance = app.wrap().query_balance(CARL.to_string(), DENOM).unwrap();
-    assert_eq!(balance.amount, Uint128::new(1000));
-    assert_eq!(balance.denom, DENOM);
-}
-
-#[test]
 fn exec_execute_transaction() {
     let mut app = mock_app();
 

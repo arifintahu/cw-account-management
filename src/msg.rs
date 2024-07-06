@@ -1,7 +1,7 @@
 use std::fmt;
 
 use cosmwasm_schema::QueryResponses;
-use cosmwasm_std::{Coin, CosmosMsg, Empty};
+use cosmwasm_std::{CosmosMsg, Empty};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -31,8 +31,6 @@ where
     AddSigners { signers: Vec<String> },
     // RemoveSigners will remove signers from current signers, must be called by an admin
     RemoveSigners { signers: Vec<String> },
-    // SpendBalance will send token from smarcontract balance to recipient address
-    SpendBalances { recipient: String, amount: Vec<Coin> },
     /// Execute requests the contract to re-dispatch all these messages with the
     /// contract's address as sender. Every implementation has it's own logic to
     /// determine in

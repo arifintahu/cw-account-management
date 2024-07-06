@@ -10,7 +10,7 @@ use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
 use crate::state::{State, STATE, TX_NEXT_ID};
 use crate::execute::{
     add_signers, change_admin, change_threshold, execute_transaction, 
-    freeze, remove_signers, sign_transaction, spend_balances,
+    freeze, remove_signers, sign_transaction,
 };
 use crate::query::{admin, mutable, signer_list, threshold, tx_executions};
 
@@ -56,7 +56,6 @@ pub fn execute(
         ExecuteMsg::ChangeThreshold { new_threshold } => change_threshold(deps, info, new_threshold),
         ExecuteMsg::AddSigners { signers } => add_signers(deps, info, signers),
         ExecuteMsg::RemoveSigners { signers } => remove_signers(deps, info, signers),
-        ExecuteMsg::SpendBalances { recipient, amount } => spend_balances(deps, info, recipient, amount),
         ExecuteMsg::ExecuteTransaction { msgs } => execute_transaction(deps, info, msgs),
         ExecuteMsg::SignTransaction { tx_id } => sign_transaction(deps, info, tx_id),
     }

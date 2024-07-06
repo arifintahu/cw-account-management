@@ -16,9 +16,6 @@
 - [x] sign account tx by signer
 - [ ] add/remove whitelist addresses
 - [ ] add/remove transfer limit
-- [ ] add balance to smartcontract
-- [ ] spend balance
-
 
 # Query
 - [x] query admin

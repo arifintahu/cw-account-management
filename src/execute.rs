@@ -1,5 +1,5 @@
 use cosmwasm_std::{
-    BankMsg, Coin, CosmosMsg, DepsMut,
+    CosmosMsg, DepsMut,
     MessageInfo, Response,
 };
 use crate::error::ContractError;
@@ -117,29 +117,6 @@ pub fn remove_signers (
     STATE.save(deps.storage, &curr_state)?;
 
     Ok(Response::new().add_attribute("action", "remove_signers"))
-}
-
-pub fn spend_balances (
-    deps: DepsMut,
-    info: MessageInfo,
-    recipient: String,
-    amount: Vec<Coin>,
-) -> Result<Response, ContractError> {
-    let curr_state = STATE.load(deps.storage)?;
-    if !curr_state.can_spend(info.sender.as_ref()) {
-        return Err(ContractError::Unauthorized {
-            sender: info.sender,
-        });
-    }
-
-    let recipient_addr = deps.api.addr_validate(&recipient)?;
-    let msg = BankMsg::Send { to_address: recipient_addr.to_string(), amount };
-    
-    let res = Response::new()
-        .add_attribute("action", "spend_balances")
-        .add_attribute("recipient", recipient)
-        .add_message(msg);
-    Ok(res)
 }
 
 pub fn execute_transaction(
