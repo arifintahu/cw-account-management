@@ -1,7 +1,7 @@
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-use cosmwasm_std::{Addr, CosmosMsg};
+use cosmwasm_std::{Addr, Coin, CosmosMsg};
 use cw_storage_plus::{Item, Map};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -76,3 +76,12 @@ impl TxData {
 
 pub const TX_NEXT_ID: Item<u16> = Item::new("tx_next_id");
 pub const TX_EXECUTION: Map<u16, TxData> = Map::new("tx_execution");
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct Policy {
+    pub whitelist_enabled: bool,
+    pub whitelist_addresses: Vec<Addr>,
+    pub transfer_limits: Vec<Coin>,
+}
+
+pub const POLICY: Item<Policy> = Item::new("policy");

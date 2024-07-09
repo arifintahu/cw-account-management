@@ -145,6 +145,13 @@ pub fn execute_transaction(
         .collect();
     assert_eq!(send_msgs.len(), 1);
 
+    for send_msg in send_msgs {
+        if let BankMsg::Send { to_address, amount } = send_msg {
+            println!("To Address: {}, Amount: {:?}", to_address, amount);
+            // Do something with the amount
+        }
+    }
+
     if curr_state.threshold == 1 {
         let curr_id = TX_NEXT_ID.load(deps.storage).unwrap_or_default();
         let tx_data = TxData::new(curr_id, msgs.clone(), info.sender.clone(), TxStatus::Done);
