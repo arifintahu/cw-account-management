@@ -1,6 +1,5 @@
 use cosmwasm_std::{
-    CosmosMsg, DepsMut,
-    MessageInfo, Response,
+    BankMsg, CosmosMsg, DepsMut, MessageInfo, Response
 };
 use crate::error::ContractError;
 use crate::state::{
@@ -131,7 +130,22 @@ pub fn execute_transaction(
         });
     }
 
-     if curr_state.threshold == 1 {
+    let send_msgs: Vec<BankMsg> = msgs.clone().into_iter()
+        .filter_map(|msg| {
+            if let CosmosMsg::Bank(bank_msg) = msg {
+                if let BankMsg::Send { .. } = bank_msg {
+                    Some(bank_msg)
+                } else {
+                    None
+                }
+            } else {
+                None
+            }
+        })
+        .collect();
+    assert_eq!(send_msgs.len(), 1);
+
+    if curr_state.threshold == 1 {
         let curr_id = TX_NEXT_ID.load(deps.storage).unwrap_or_default();
         let tx_data = TxData::new(curr_id, msgs.clone(), info.sender.clone(), TxStatus::Done);
         
@@ -144,7 +158,7 @@ pub fn execute_transaction(
                 .add_attribute("action", "execute_transaction")
                 .add_attribute("tx_id", curr_id.to_string())
         )
-     } else if curr_state.threshold > 1 {
+    } else if curr_state.threshold > 1 {
         let curr_id = TX_NEXT_ID.load(deps.storage).unwrap_or_default();
         let tx_data = TxData::new(curr_id, msgs.clone(), info.sender.clone(), TxStatus::Pending);
         
@@ -156,11 +170,11 @@ pub fn execute_transaction(
                 .add_attribute("action", "execute_transaction")
                 .add_attribute("tx_id", curr_id.to_string())
         )
-     } else {
+    } else {
         return Err(ContractError::InvalidThreshold {
             threshold: curr_state.threshold,
         });
-     }
+    }
 }
 
 pub fn sign_transaction(
