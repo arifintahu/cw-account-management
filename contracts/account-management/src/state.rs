@@ -84,4 +84,29 @@ pub struct Policy {
     pub transfer_limits: Vec<Coin>,
 }
 
+impl Policy {
+    // return true if the address is registered as whitelist
+    pub fn is_whitelisted(&self, addr: impl AsRef<str>) -> bool {
+        let addr = addr.as_ref();
+        self.whitelist_addresses.iter().any(|a| a.as_ref() == addr)
+    }
+
+    // return true if the address can receive transfer
+    pub fn can_receive(&self, addr: &str) -> bool {
+        !self.whitelist_enabled || self.is_whitelisted(addr) 
+    }
+
+    // return true if the amount can be transfered
+    pub fn can_transfer(&self, amt: Coin) -> bool {
+        for limit in &self.transfer_limits {
+            if limit.denom == amt.denom {
+                if limit.amount < amt.amount {
+                    return false;
+                }
+            }
+        }
+        true
+    }
+}
+
 pub const POLICY: Item<Policy> = Item::new("policy");
