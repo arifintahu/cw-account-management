@@ -1,23 +1,16 @@
-[package]
-name = "cw-account-management"
-version = "0.1.0"
-edition = "2021"
+[workspace]
 
-[lib]
-crate-type = ["cdylib", "rlib"]
+members = [
+  'contracts/*',
+]
 
-[dependencies]
-cosmwasm-std = { version = "1.0.0-beta8", features = ["staking"] }
-serde = { version = "1.0.103", default-features = false, features = ["derive"] }
-cw-storage-plus = "0.13.4"
-thiserror = "1"
-schemars = "0.8.1"
-cw-utils = "0.13"
-cosmwasm-schema = "1.1.4"
-cw2 = "1.1.2"
-
-[dev-dependencies]
-cw-multi-test = "0.13.4"
-
-[features]
-library = []
+[profile.release]
+codegen-units = 1
+debug = false
+debug-assertions = false
+incremental = false
+lto = true
+opt-level = 3
+overflow-checks = true
+panic = 'abort'
+rpath = false
