@@ -9,7 +9,6 @@ pub struct State {
     pub admin: Addr,
     pub signers: Vec<Addr>,
     pub threshold: u8,
-    pub mutable: bool,
 }
 
 impl State {
@@ -27,7 +26,7 @@ impl State {
 
     // return true if the address is registered as admin and the config is mutable
     pub fn can_modify(&self, addr: &str) -> bool {
-        self.mutable && self.is_admin(addr)
+        self.is_admin(addr)
     }
 
     // return true if the address is registered as signer

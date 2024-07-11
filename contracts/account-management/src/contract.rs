@@ -10,9 +10,9 @@ use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
 use crate::state::{State, STATE, TX_NEXT_ID};
 use crate::execute::{
     add_signers, change_admin, change_threshold, execute_transaction, 
-    freeze, remove_signers, sign_transaction,
+    remove_signers, sign_transaction,
 };
-use crate::query::{admin, mutable, signer_list, threshold, tx_executions};
+use crate::query::{admin, signer_list, threshold, tx_executions};
 
 // version info for migration info
 const CONTRACT_NAME: &str = "crates.io:cw-account-management";
@@ -36,7 +36,6 @@ pub fn instantiate(
         admin: validate_addr(deps.api, &msg.admin)?,
         signers: map_validate(deps.api, &msg.signers)?,
         threshold: msg.threshold,
-        mutable: msg.mutable,
     };
     STATE.save(deps.storage, &cfg)?;
     TX_NEXT_ID.save(deps.storage, &INIT_TX_ID)?;
@@ -51,7 +50,6 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> Result<Response<Empty>, ContractError> {
     match msg {
-        ExecuteMsg::Freeze {  } => freeze(deps, info),
         ExecuteMsg::ChangeAdmin { new_admin } => change_admin(deps, info, new_admin),
         ExecuteMsg::ChangeThreshold { new_threshold } => change_threshold(deps, info, new_threshold),
         ExecuteMsg::AddSigners { signers } => add_signers(deps, info, signers),
@@ -72,6 +70,5 @@ pub fn query(
         QueryMsg::Threshold {} => to_json_binary(&threshold(deps)?),
         QueryMsg::Signerlist {} => to_json_binary(&signer_list(deps)?),
         QueryMsg::TxExecutions {} => to_json_binary(&tx_executions(deps)?),
-        QueryMsg::Mutable {} => to_json_binary(&mutable(deps)?),
     }
 }

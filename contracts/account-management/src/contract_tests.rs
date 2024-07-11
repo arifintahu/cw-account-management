@@ -1,7 +1,7 @@
 use cosmwasm_std::{coin, Addr, BankMsg, Empty, Uint128};
 use cw_multi_test::{App, ContractWrapper, Executor, AppBuilder};
 use crate::msg::{
-    AdminResponse, ExecuteMsg, InstantiateMsg, MutableResponse,
+    AdminResponse, ExecuteMsg, InstantiateMsg,
     QueryMsg, SignerListResponse, ThresholdResponse,
     TxExecutionsResponse,
 };
@@ -42,7 +42,6 @@ fn query_admin() {
                 admin: ALICE.to_string(),
                 signers: vec![CARL.to_string()],
                 threshold: 1,
-                mutable: false,
             },
             &[],
             "Contract",
@@ -77,7 +76,6 @@ fn query_signer_list() {
                 admin: ALICE.to_string(),
                 signers: vec![CARL.to_string()],
                 threshold: 1,
-                mutable: false,
             },
             &[],
             "Contract",
@@ -98,61 +96,6 @@ fn query_signer_list() {
 }
 
 #[test]
-fn exec_freeze() {
-    let mut app = App::default();
-
-    let code = ContractWrapper::new(execute, instantiate, query);
-    let code_id = app.store_code(Box::new(code));
-
-    let addr = app
-        .instantiate_contract(
-            code_id,
-            Addr::unchecked( "owner"),
-            &InstantiateMsg {
-                admin: Addr::unchecked( "owner").to_string(),
-                signers: vec![Addr::unchecked( "owner").to_string()],
-                threshold: 1,
-                mutable: true,
-            },
-            &[],
-            "Contract",
-            None,
-        )
-        .unwrap();
-
-    let resp: MutableResponse = app
-        .wrap()
-        .query_wasm_smart(addr.clone(), &QueryMsg::Mutable {})
-        .unwrap();
-    assert_eq!(
-        resp,
-        MutableResponse {
-            mutable: true,
-        }
-    );
-
-    let msg: ExecuteMsg<Empty> = ExecuteMsg::Freeze {};
-    let _ = app
-        .execute_contract(
-            Addr::unchecked( "owner"),
-            addr.clone(),
-            &msg,
-            &[],
-        ).unwrap();
-    
-    let resp: MutableResponse = app
-        .wrap()
-        .query_wasm_smart(addr.clone(), &QueryMsg::Mutable {})
-        .unwrap();
-    assert_eq!(
-        resp,
-        MutableResponse {
-            mutable: false,
-        }
-    );
-}
-
-#[test]
 fn exec_change_admin() {
     let mut app = App::default();
 
@@ -167,7 +110,6 @@ fn exec_change_admin() {
                 admin: ALICE.to_string(),
                 signers: vec![CARL.to_string()],
                 threshold: 1,
-                mutable: true,
             },
             &[],
             "Contract",
@@ -224,7 +166,6 @@ fn exec_change_threshold() {
                 admin: ALICE.to_string(),
                 signers: vec![ALICE.to_string(), CARL.to_string()],
                 threshold: 1,
-                mutable: true,
             },
             &[],
             "Contract",
@@ -270,7 +211,6 @@ fn exec_add_signers() {
                 admin: Addr::unchecked("owner").to_string(),
                 signers: vec![ALICE.to_string()],
                 threshold: 1,
-                mutable: true,
             },
             &[],
             "Contract",
@@ -327,7 +267,6 @@ fn exec_remove_signers() {
                 admin: Addr::unchecked("owner").to_string(),
                 signers: vec![ALICE.to_string(), BOB.to_string()],
                 threshold: 1,
-                mutable: true,
             },
             &[],
             "Contract",
@@ -384,7 +323,6 @@ fn exec_execute_transaction() {
                 admin: Addr::unchecked("owner").to_string(),
                 signers: vec![Addr::unchecked("owner").to_string()],
                 threshold: 1,
-                mutable: true,
             },
             &[],
             "Contract",
@@ -445,7 +383,6 @@ fn exec_sign_transaction() {
                 admin: Addr::unchecked("owner").to_string(),
                 signers: vec![Addr::unchecked("owner").to_string(), ALICE.to_string()],
                 threshold: 2,
-                mutable: true,
             },
             &[],
             "Contract",

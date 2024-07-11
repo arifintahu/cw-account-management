@@ -12,7 +12,6 @@ pub struct InstantiateMsg {
     pub admin: String,
     pub signers: Vec<String>,
     pub threshold: u8,
-    pub mutable: bool,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -21,8 +20,6 @@ pub enum ExecuteMsg<T = Empty>
 where
     T: Clone + fmt::Debug + PartialEq + JsonSchema,
 {
-    // Freeze will make a mutable contact immutable, must be called by an admin
-    Freeze {},
     // ChangeAdmin will change current admin to new admin, must be called by a current admin
     ChangeAdmin { new_admin: String },
     // ChangeThreshold will change current threshold to new threshold, must be called by a current admin
@@ -53,9 +50,6 @@ pub enum QueryMsg {
 
     #[returns(ThresholdResponse)]
     TxExecutions {},
-
-    #[returns(MutableResponse)]
-    Mutable {},
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -80,10 +74,4 @@ pub struct ThresholdResponse {
 #[serde(rename_all = "snake_case")]
 pub struct TxExecutionsResponse {
     pub tx_executions: Vec<TxData>,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-pub struct MutableResponse {
-    pub mutable: bool,
 }

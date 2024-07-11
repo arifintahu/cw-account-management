@@ -11,26 +11,6 @@ use crate::helpers::{
     map_validate, validate_addr,
 };
 
-pub fn freeze(
-    deps: DepsMut,
-    info: MessageInfo,
-) -> Result<Response, ContractError> {
-    let mut curr_state = STATE.load(deps.storage)?;
-    if !curr_state.can_modify(info.sender.as_ref()) {
-        return Err(ContractError::Unauthorized {
-            sender: info.sender,
-        });
-    }
-    
-    curr_state.mutable = false;
-    STATE.save(deps.storage, &curr_state)?;
-
-    Ok(
-        Response::new()
-            .add_attribute("action", "freeze")
-    )
-}
-
 pub fn change_admin(
     deps: DepsMut,
     info: MessageInfo,

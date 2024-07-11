@@ -1,6 +1,6 @@
 use cosmwasm_std::{Deps, Order, StdResult};
 use crate::msg::{
-    AdminResponse, MutableResponse, SignerListResponse,
+    AdminResponse, SignerListResponse,
     ThresholdResponse, TxExecutionsResponse,
 };
 use crate::state::{TxData, STATE, TX_EXECUTION, TX_NEXT_ID};
@@ -51,12 +51,4 @@ pub fn tx_executions(deps: Deps) -> StdResult<TxExecutionsResponse> {
         };
         Ok(resp)
     }
-}
-
-pub fn mutable(deps: Deps) -> StdResult<MutableResponse> {
-    let cfg = STATE.load(deps.storage)?;
-    let resp = MutableResponse{
-        mutable: cfg.mutable.to_owned(),
-    };
-    Ok(resp)
 }
