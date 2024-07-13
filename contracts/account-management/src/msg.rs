@@ -35,6 +35,8 @@ where
     ExecuteTransaction{ msgs: Vec<CosmosMsg<T>> },
     // SignMessage will sign transaction execution in pending period
     SignTransaction { tx_id: u16 },
+    // AddWhitelistAddresses will add whitelist addresses to account policy, must be called by an admin
+    AddWhitelistAddresses { addresses: Vec<String> },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema, QueryResponses)]
@@ -49,8 +51,11 @@ pub enum QueryMsg {
     #[returns(ThresholdResponse)]
     Threshold {},
 
-    #[returns(ThresholdResponse)]
+    #[returns(TxExecutionsResponse)]
     TxExecutions {},
+
+    #[returns(WhitelistAddressesResponse)]
+    WhitelistAddresses {},
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -75,4 +80,10 @@ pub struct ThresholdResponse {
 #[serde(rename_all = "snake_case")]
 pub struct TxExecutionsResponse {
     pub tx_executions: Vec<TxData>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct WhitelistAddressesResponse {
+    pub whitelist_addresses: Vec<String>,
 }

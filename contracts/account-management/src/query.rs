@@ -1,9 +1,9 @@
 use cosmwasm_std::{Deps, Order, StdResult};
 use crate::msg::{
     AdminResponse, SignerListResponse,
-    ThresholdResponse, TxExecutionsResponse,
+    ThresholdResponse, TxExecutionsResponse, WhitelistAddressesResponse,
 };
-use crate::state::{TxData, STATE, TX_EXECUTION, TX_NEXT_ID};
+use crate::state::{TxData, POLICY, STATE, TX_EXECUTION, TX_NEXT_ID};
 
 pub fn admin(deps: Deps) -> StdResult<AdminResponse> {
     let cfg = STATE.load(deps.storage)?;
@@ -51,4 +51,12 @@ pub fn tx_executions(deps: Deps) -> StdResult<TxExecutionsResponse> {
         };
         Ok(resp)
     }
+}
+
+pub fn whitelist_addresses(deps: Deps) -> StdResult<WhitelistAddressesResponse> {
+    let policy = POLICY.load(deps.storage)?;
+    let resp = WhitelistAddressesResponse{
+        whitelist_addresses: policy.whitelist_addresses.into_iter().map(|a| a.into()).collect(),
+    };
+    Ok(resp)
 }

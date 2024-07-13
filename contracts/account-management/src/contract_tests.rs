@@ -3,7 +3,7 @@ use cw_multi_test::{App, ContractWrapper, Executor, AppBuilder};
 use crate::msg::{
     AdminResponse, ExecuteMsg, InstantiateMsg,
     QueryMsg, SignerListResponse, ThresholdResponse,
-    TxExecutionsResponse,
+    TxExecutionsResponse, WhitelistAddressesResponse,
 };
 use crate::contract::{instantiate, query, execute};
 use crate::state::TxStatus;
@@ -454,5 +454,62 @@ fn exec_sign_transaction() {
     assert_eq!(
         resp.tx_executions[0].status,
         Some(TxStatus::Done),
+    );
+}
+
+#[test]
+fn exec_add_whitelist_addresses() {
+    let mut app = App::default();
+
+    let code = ContractWrapper::new(execute, instantiate, query);
+    let code_id = app.store_code(Box::new(code));
+
+    let addr = app
+        .instantiate_contract(
+            code_id,
+            Addr::unchecked("owner"),
+            &InstantiateMsg {
+                admin: Addr::unchecked("owner").to_string(),
+                signers: vec![ALICE.to_string()],
+                threshold: 1,
+                whitelist_enabled: true,
+            },
+            &[],
+            "Contract",
+            None,
+        )
+        .unwrap();
+
+    let resp: WhitelistAddressesResponse = app
+        .wrap()
+        .query_wasm_smart(addr.clone(), &QueryMsg::WhitelistAddresses {})
+        .unwrap();
+    assert_eq!(
+        resp,
+        WhitelistAddressesResponse {
+            whitelist_addresses: vec![],
+        }
+    );
+
+    let msg: ExecuteMsg<Empty> = ExecuteMsg::AddWhitelistAddresses { 
+        addresses: vec![BOB.to_string()],
+    };
+    let _ = app
+        .execute_contract(
+            Addr::unchecked("owner"),
+            addr.clone(),
+            &msg,
+            &[],
+        ).unwrap();
+    
+    let resp: WhitelistAddressesResponse = app
+        .wrap()
+        .query_wasm_smart(addr.clone(), &QueryMsg::WhitelistAddresses {})
+        .unwrap();
+    assert_eq!(
+        resp,
+        WhitelistAddressesResponse {
+            whitelist_addresses: vec![BOB.to_string()],
+        }
     );
 }

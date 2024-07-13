@@ -1,10 +1,11 @@
+use std::collections::HashSet;
+
 use cosmwasm_std::{
-    BankMsg, CosmosMsg, DepsMut, MessageInfo, Response
+    Addr, BankMsg, CosmosMsg, DepsMut, MessageInfo, Response
 };
 use crate::error::ContractError;
 use crate::state::{
-    TxData, TxStatus, STATE,
-    TX_EXECUTION, TX_NEXT_ID,
+    TxData, TxStatus, POLICY, STATE, TX_EXECUTION, TX_NEXT_ID
 };
 use crate::helpers::{
     is_sufficient_signers, is_valid_threshold,
@@ -203,4 +204,28 @@ pub fn sign_transaction(
                 .add_attribute("tx_id", tx_id.to_string())
         )
     }
+}
+
+pub fn add_whitelist_addresses(
+    deps: DepsMut,
+    info: MessageInfo,
+    addresses: Vec<String>,
+) -> Result<Response, ContractError> {
+    let curr_state = STATE.load(deps.storage)?;
+    if !curr_state.can_modify(info.sender.as_ref()) {
+        return Err(ContractError::Unauthorized {
+            sender: info.sender,
+        });
+    }
+    
+    let addresses = map_validate(deps.api, &addresses)?;
+    let mut curr_policy = POLICY.load(deps.storage)?;
+
+    let mut unique_addresses: HashSet<Addr> = curr_policy.whitelist_addresses.into_iter().collect();
+    unique_addresses.extend(addresses);
+    
+    curr_policy.whitelist_addresses = unique_addresses.into_iter().collect();
+    POLICY.save(deps.storage, &curr_policy)?;
+
+    Ok(Response::new().add_attribute("action", "add_whitelist_addresses"))
 }
