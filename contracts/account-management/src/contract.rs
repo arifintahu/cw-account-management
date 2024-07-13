@@ -7,7 +7,7 @@ use cw2::set_contract_version;
 use crate::error::ContractError;
 use crate::helpers::{map_validate, validate_addr, is_valid_threshold};
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
-use crate::state::{State, STATE, TX_NEXT_ID};
+use crate::state::{Policy, State, POLICY, STATE, TX_NEXT_ID};
 use crate::execute::{
     add_signers, change_admin, change_threshold, execute_transaction, 
     remove_signers, sign_transaction,
@@ -39,6 +39,13 @@ pub fn instantiate(
     };
     STATE.save(deps.storage, &cfg)?;
     TX_NEXT_ID.save(deps.storage, &INIT_TX_ID)?;
+
+    let policy = Policy {
+        whitelist_enabled: msg.whitelist_enabled,
+        whitelist_addresses: vec![],
+        transfer_limits: vec![],
+    };
+    POLICY.save(deps.storage, &policy)?;
     Ok(Response::default())
 }
 

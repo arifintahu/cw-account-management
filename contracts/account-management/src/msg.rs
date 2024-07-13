@@ -12,6 +12,7 @@ pub struct InstantiateMsg {
     pub admin: String,
     pub signers: Vec<String>,
     pub threshold: u8,
+    pub whitelist_enabled: bool,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
