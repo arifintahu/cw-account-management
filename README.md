@@ -4,7 +4,7 @@
 - [x] admin
 - [x] signers
 - [x] threshold
-- [ ] whitelist enabled
+- [x] whitelist enabled
 
 # Execute
 - [x] change admin
@@ -22,4 +22,3 @@
 - [x] query whitelist-addresses
 - [ ] query transfer limit
 - [x] query tx executions
-W

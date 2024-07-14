@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use cosmwasm_std::{coin, Addr, BankMsg, Empty, Uint128};
 use cw_multi_test::{App, ContractWrapper, Executor, AppBuilder};
 use crate::msg::{
@@ -492,7 +494,7 @@ fn exec_add_whitelist_addresses() {
     );
 
     let msg: ExecuteMsg<Empty> = ExecuteMsg::AddWhitelistAddresses { 
-        addresses: vec![BOB.to_string()],
+        addresses: vec![ALICE.to_string(), BOB.to_string()],
     };
     let _ = app
         .execute_contract(
@@ -506,10 +508,97 @@ fn exec_add_whitelist_addresses() {
         .wrap()
         .query_wasm_smart(addr.clone(), &QueryMsg::WhitelistAddresses {})
         .unwrap();
+    let resp_addresses: HashSet<String> = resp.whitelist_addresses.into_iter().collect();
+    let expected_addresses: HashSet<String> = vec![ALICE.to_string(), BOB.to_string()].into_iter().collect();
+    assert_eq!(resp_addresses, expected_addresses);
+
+    let msg: ExecuteMsg<Empty> = ExecuteMsg::AddWhitelistAddresses { 
+        addresses: vec![BOB.to_string(), CARL.to_string()],
+    };
+    let _ = app
+        .execute_contract(
+            Addr::unchecked("owner"),
+            addr.clone(),
+            &msg,
+            &[],
+        ).unwrap();
+    
+    let resp: WhitelistAddressesResponse = app
+        .wrap()
+        .query_wasm_smart(addr.clone(), &QueryMsg::WhitelistAddresses {})
+        .unwrap();
+    let resp_addresses: HashSet<String> = resp.whitelist_addresses.into_iter().collect();
+    let expected_addresses: HashSet<String> = vec![ALICE.to_string(), BOB.to_string(), CARL.to_string()].into_iter().collect();
+    assert_eq!(resp_addresses, expected_addresses);
+}
+
+#[test]
+fn exec_remove_whitelist_addresses() {
+    let mut app = App::default();
+
+    let code = ContractWrapper::new(execute, instantiate, query);
+    let code_id = app.store_code(Box::new(code));
+
+    let addr = app
+        .instantiate_contract(
+            code_id,
+            Addr::unchecked("owner"),
+            &InstantiateMsg {
+                admin: Addr::unchecked("owner").to_string(),
+                signers: vec![ALICE.to_string()],
+                threshold: 1,
+                whitelist_enabled: true,
+            },
+            &[],
+            "Contract",
+            None,
+        )
+        .unwrap();
+
+    let resp: WhitelistAddressesResponse = app
+        .wrap()
+        .query_wasm_smart(addr.clone(), &QueryMsg::WhitelistAddresses {})
+        .unwrap();
     assert_eq!(
         resp,
         WhitelistAddressesResponse {
-            whitelist_addresses: vec![BOB.to_string()],
+            whitelist_addresses: vec![],
         }
     );
+
+    let msg: ExecuteMsg<Empty> = ExecuteMsg::AddWhitelistAddresses { 
+        addresses: vec![ALICE.to_string(), BOB.to_string(), CARL.to_string()],
+    };
+    let _ = app
+        .execute_contract(
+            Addr::unchecked("owner"),
+            addr.clone(),
+            &msg,
+            &[],
+        ).unwrap();
+    
+    let resp: WhitelistAddressesResponse = app
+        .wrap()
+        .query_wasm_smart(addr.clone(), &QueryMsg::WhitelistAddresses {})
+        .unwrap();
+    let resp_addresses: HashSet<String> = resp.whitelist_addresses.into_iter().collect();
+    let expected_addresses: HashSet<String> = vec![ALICE.to_string(), BOB.to_string(), CARL.to_string()].into_iter().collect();
+    assert_eq!(resp_addresses, expected_addresses);
+
+    let msg: ExecuteMsg<Empty> = ExecuteMsg::RemoveWhitelistAddresses { 
+        addresses: vec![BOB.to_string(), CARL.to_string()],
+    };
+    let _ = app
+        .execute_contract(
+            Addr::unchecked("owner"),
+            addr.clone(),
+            &msg,
+            &[],
+        ).unwrap();
+    
+    let resp: WhitelistAddressesResponse = app
+        .wrap()
+        .query_wasm_smart(addr.clone(), &QueryMsg::WhitelistAddresses {})
+        .unwrap();
+    assert_eq!(resp.whitelist_addresses, vec![ALICE.to_string()]);
 }

@@ -37,6 +37,8 @@ where
     SignTransaction { tx_id: u16 },
     // AddWhitelistAddresses will add whitelist addresses to account policy, must be called by an admin
     AddWhitelistAddresses { addresses: Vec<String> },
+    // RemoveWhitelistAddresses will remove whitelist addresses from account policy, must be called by an admin
+    RemoveWhitelistAddresses { addresses: Vec<String> },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema, QueryResponses)]

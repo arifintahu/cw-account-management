@@ -229,3 +229,24 @@ pub fn add_whitelist_addresses(
 
     Ok(Response::new().add_attribute("action", "add_whitelist_addresses"))
 }
+
+pub fn remove_whitelist_addresses (
+    deps: DepsMut,
+    info: MessageInfo,
+    addresses: Vec<String>,
+) -> Result<Response, ContractError> {
+    let curr_state = STATE.load(deps.storage)?;
+    if !curr_state.can_modify(info.sender.as_ref()) {
+        return Err(ContractError::Unauthorized {
+            sender: info.sender,
+        });
+    }
+
+    let addresses = map_validate(deps.api, &addresses)?;
+    let mut curr_policy = POLICY.load(deps.storage)?;
+
+    curr_policy.whitelist_addresses.retain(|curr_whitelist| !addresses.contains(curr_whitelist));
+    POLICY.save(deps.storage, &curr_policy)?;
+
+    Ok(Response::new().add_attribute("action", "remove_whitelist_addresses"))
+}
