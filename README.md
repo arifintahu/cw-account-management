@@ -13,12 +13,12 @@
 - [x] execute account tx
 - [x] sign account tx by signer
 - [x] set/remove whitelist addresses
-- [ ] set/remove transfer limit
+- [x] set/remove transfer limit
 
 # Query
 - [x] query admin
 - [x] query signer list
 - [x] query threshold
 - [x] query whitelist-addresses
-- [ ] query transfer limit
+- [x] query transfer limit
 - [x] query tx executions
