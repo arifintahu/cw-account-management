@@ -493,7 +493,7 @@ fn exec_add_whitelist_addresses() {
         }
     );
 
-    let msg: ExecuteMsg<Empty> = ExecuteMsg::AddWhitelistAddresses { 
+    let msg: ExecuteMsg<Empty> = ExecuteMsg::SetWhitelistAddresses { 
         addresses: vec![ALICE.to_string(), BOB.to_string()],
     };
     let _ = app
@@ -512,7 +512,7 @@ fn exec_add_whitelist_addresses() {
     let expected_addresses: HashSet<String> = vec![ALICE.to_string(), BOB.to_string()].into_iter().collect();
     assert_eq!(resp_addresses, expected_addresses);
 
-    let msg: ExecuteMsg<Empty> = ExecuteMsg::AddWhitelistAddresses { 
+    let msg: ExecuteMsg<Empty> = ExecuteMsg::SetWhitelistAddresses { 
         addresses: vec![BOB.to_string(), CARL.to_string()],
     };
     let _ = app
@@ -566,7 +566,7 @@ fn exec_remove_whitelist_addresses() {
         }
     );
 
-    let msg: ExecuteMsg<Empty> = ExecuteMsg::AddWhitelistAddresses { 
+    let msg: ExecuteMsg<Empty> = ExecuteMsg::SetWhitelistAddresses { 
         addresses: vec![ALICE.to_string(), BOB.to_string(), CARL.to_string()],
     };
     let _ = app

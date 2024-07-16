@@ -1,7 +1,7 @@
 use std::fmt;
 
 use cosmwasm_schema::QueryResponses;
-use cosmwasm_std::{CosmosMsg, Empty};
+use cosmwasm_std::{Coin, CosmosMsg, Empty};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -36,9 +36,13 @@ where
     // SignMessage will sign transaction execution in pending period
     SignTransaction { tx_id: u16 },
     // AddWhitelistAddresses will add whitelist addresses to account policy, must be called by an admin
-    AddWhitelistAddresses { addresses: Vec<String> },
+    SetWhitelistAddresses { addresses: Vec<String> },
     // RemoveWhitelistAddresses will remove whitelist addresses from account policy, must be called by an admin
     RemoveWhitelistAddresses { addresses: Vec<String> },
+    // AddWTransferLimits will add transfer limits to account policy, must be called by an admin
+    SetTransferLimits { coins: Vec<Coin> },
+    // RemoveTransferLimits will remove transfer limits from account policy, must be called by an admin
+    RemoveTransferLimits { denoms: Vec<String> },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema, QueryResponses)]

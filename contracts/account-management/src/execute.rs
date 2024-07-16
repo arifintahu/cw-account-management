@@ -206,7 +206,7 @@ pub fn sign_transaction(
     }
 }
 
-pub fn add_whitelist_addresses(
+pub fn set_whitelist_addresses(
     deps: DepsMut,
     info: MessageInfo,
     addresses: Vec<String>,

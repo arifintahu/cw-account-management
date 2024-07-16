@@ -9,7 +9,7 @@ use crate::helpers::{map_validate, validate_addr, is_valid_threshold};
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
 use crate::state::{Policy, State, POLICY, STATE, TX_NEXT_ID};
 use crate::execute::{
-    add_signers, add_whitelist_addresses, change_admin, change_threshold,
+    add_signers, set_whitelist_addresses, change_admin, change_threshold,
     execute_transaction, remove_signers, remove_whitelist_addresses,
     sign_transaction,
 };
@@ -67,8 +67,10 @@ pub fn execute(
         ExecuteMsg::RemoveSigners { signers } => remove_signers(deps, info, signers),
         ExecuteMsg::ExecuteTransaction { msgs } => execute_transaction(deps, info, msgs),
         ExecuteMsg::SignTransaction { tx_id } => sign_transaction(deps, info, tx_id),
-        ExecuteMsg::AddWhitelistAddresses { addresses } => add_whitelist_addresses(deps, info, addresses),
+        ExecuteMsg::SetWhitelistAddresses { addresses } => set_whitelist_addresses(deps, info, addresses),
         ExecuteMsg::RemoveWhitelistAddresses { addresses } => remove_whitelist_addresses(deps, info, addresses),
+        ExecuteMsg::SetTransferLimits { coins } => Ok((Response::new())),
+        ExecuteMsg::RemoveTransferLimits { denoms } => Ok((Response::new())),
     }
 }
 
