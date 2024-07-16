@@ -1,11 +1,9 @@
 use std::collections::HashSet;
 
-use cosmwasm_std::{coin, Addr, BankMsg, Empty, Uint128};
+use cosmwasm_std::{coin, Addr, BankMsg, Coin, Empty, Uint128};
 use cw_multi_test::{App, ContractWrapper, Executor, AppBuilder};
 use crate::msg::{
-    AdminResponse, ExecuteMsg, InstantiateMsg,
-    QueryMsg, SignerListResponse, ThresholdResponse,
-    TxExecutionsResponse, WhitelistAddressesResponse,
+    AdminResponse, ExecuteMsg, InstantiateMsg, QueryMsg, SignerListResponse, ThresholdResponse, TransferLimitsResponse, TxExecutionsResponse, WhitelistAddressesResponse
 };
 use crate::contract::{instantiate, query, execute};
 use crate::state::TxStatus;
@@ -460,7 +458,7 @@ fn exec_sign_transaction() {
 }
 
 #[test]
-fn exec_add_whitelist_addresses() {
+fn exec_set_whitelist_addresses() {
     let mut app = App::default();
 
     let code = ContractWrapper::new(execute, instantiate, query);
@@ -601,4 +599,207 @@ fn exec_remove_whitelist_addresses() {
         .query_wasm_smart(addr.clone(), &QueryMsg::WhitelistAddresses {})
         .unwrap();
     assert_eq!(resp.whitelist_addresses, vec![ALICE.to_string()]);
+}
+
+#[test]
+fn exec_set_transfer_limits() {
+    let mut app = App::default();
+
+    let code = ContractWrapper::new(execute, instantiate, query);
+    let code_id = app.store_code(Box::new(code));
+
+    let addr = app
+        .instantiate_contract(
+            code_id,
+            Addr::unchecked("owner"),
+            &InstantiateMsg {
+                admin: Addr::unchecked("owner").to_string(),
+                signers: vec![ALICE.to_string()],
+                threshold: 1,
+                whitelist_enabled: true,
+            },
+            &[],
+            "Contract",
+            None,
+        )
+        .unwrap();
+
+    let resp: TransferLimitsResponse = app
+        .wrap()
+        .query_wasm_smart(addr.clone(), &QueryMsg::TransferLimits {})
+        .unwrap();
+    assert_eq!(
+        resp,
+        TransferLimitsResponse {
+            transfer_limits: vec![],
+        }
+    );
+
+    let coins = vec![
+        Coin {
+            denom: "token1".to_string(),
+            amount: Uint128::new(100),
+        },
+        Coin {
+            denom: "token2".to_string(),
+            amount: Uint128::new(200),
+        },
+    ];
+
+    let msg: ExecuteMsg<Empty> = ExecuteMsg::SetTransferLimits { 
+        coins: coins.clone(),
+    };
+    let _ = app
+        .execute_contract(
+            Addr::unchecked("owner"),
+            addr.clone(),
+            &msg,
+            &[],
+        ).unwrap();
+    
+    let resp: TransferLimitsResponse = app
+        .wrap()
+        .query_wasm_smart(addr.clone(), &QueryMsg::TransferLimits {})
+        .unwrap();
+    
+    let mut resp_coins = resp.transfer_limits;
+    resp_coins.sort_by(|a, b| a.denom.cmp(&b.denom));
+    assert_eq!(resp_coins, coins);
+
+    let new_coins = vec![
+        Coin {
+            denom: "token1".to_string(),
+            amount: Uint128::new(150),
+        },
+        Coin {
+            denom: "token3".to_string(),
+            amount: Uint128::new(300),
+        },
+    ];
+
+    let msg: ExecuteMsg<Empty> = ExecuteMsg::SetTransferLimits { 
+        coins: new_coins.clone(),
+    };
+    let _ = app
+        .execute_contract(
+            Addr::unchecked("owner"),
+            addr.clone(),
+            &msg,
+            &[],
+        ).unwrap();
+    
+    let resp: TransferLimitsResponse = app
+        .wrap()
+        .query_wasm_smart(addr.clone(), &QueryMsg::TransferLimits {})
+        .unwrap();
+    
+    let mut expected_coins = vec![
+        Coin {
+            denom: "token1".to_string(),
+            amount: Uint128::new(150),
+        },
+        Coin {
+            denom: "token2".to_string(),
+            amount: Uint128::new(200),
+        },
+        Coin {
+            denom: "token3".to_string(),
+            amount: Uint128::new(300),
+        },
+    ];
+    expected_coins.sort_by(|a, b| a.denom.cmp(&b.denom));
+
+    let mut resp_coins = resp.transfer_limits;
+    resp_coins.sort_by(|a, b| a.denom.cmp(&b.denom));
+
+    assert_eq!(resp_coins, expected_coins);
+}
+
+#[test]
+fn exec_remove_transfer_limits() {
+    let mut app = App::default();
+
+    let code = ContractWrapper::new(execute, instantiate, query);
+    let code_id = app.store_code(Box::new(code));
+
+    let addr = app
+        .instantiate_contract(
+            code_id,
+            Addr::unchecked("owner"),
+            &InstantiateMsg {
+                admin: Addr::unchecked("owner").to_string(),
+                signers: vec![ALICE.to_string()],
+                threshold: 1,
+                whitelist_enabled: true,
+            },
+            &[],
+            "Contract",
+            None,
+        )
+        .unwrap();
+
+    let coins = vec![
+        Coin {
+            denom: "token1".to_string(),
+            amount: Uint128::new(100),
+        },
+        Coin {
+            denom: "token2".to_string(),
+            amount: Uint128::new(200),
+        },
+        Coin {
+            denom: "token3".to_string(),
+            amount: Uint128::new(300),
+        },
+    ];
+
+    let msg: ExecuteMsg<Empty> = ExecuteMsg::SetTransferLimits { 
+        coins: coins.clone(),
+    };
+    let _ = app
+        .execute_contract(
+            Addr::unchecked("owner"),
+            addr.clone(),
+            &msg,
+            &[],
+        ).unwrap();
+    
+    let resp: TransferLimitsResponse = app
+        .wrap()
+        .query_wasm_smart(addr.clone(), &QueryMsg::TransferLimits {})
+        .unwrap();
+    let mut resp_coins = resp.transfer_limits;
+    resp_coins.sort_by(|a, b| a.denom.cmp(&b.denom));
+    assert_eq!(resp_coins, coins);
+
+    let denoms_to_remove = vec!["token2".to_string(), "token3".to_string()];
+
+    let msg: ExecuteMsg<Empty> = ExecuteMsg::RemoveTransferLimits { 
+        denoms: denoms_to_remove.clone(),
+    };
+    let _ = app
+        .execute_contract(
+            Addr::unchecked("owner"),
+            addr.clone(),
+            &msg,
+            &[],
+        ).unwrap();
+    
+    let resp: TransferLimitsResponse = app
+        .wrap()
+        .query_wasm_smart(addr.clone(), &QueryMsg::TransferLimits {})
+        .unwrap();
+    
+    let mut expected_coins = vec![
+        Coin {
+            denom: "token1".to_string(),
+            amount: Uint128::new(100),
+        },
+    ];
+    expected_coins.sort_by(|a, b| a.denom.cmp(&b.denom));
+
+    let mut resp_coins = resp.transfer_limits;
+    resp_coins.sort_by(|a, b| a.denom.cmp(&b.denom));
+
+    assert_eq!(resp_coins, expected_coins);
 }

@@ -62,6 +62,9 @@ pub enum QueryMsg {
 
     #[returns(WhitelistAddressesResponse)]
     WhitelistAddresses {},
+
+    #[returns(TransferLimitsResponse)]
+    TransferLimits {},
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -92,4 +95,10 @@ pub struct TxExecutionsResponse {
 #[serde(rename_all = "snake_case")]
 pub struct WhitelistAddressesResponse {
     pub whitelist_addresses: Vec<String>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct TransferLimitsResponse {
+    pub transfer_limits: Vec<Coin>,
 }

@@ -1,7 +1,6 @@
 use cosmwasm_std::{Deps, Order, StdResult};
 use crate::msg::{
-    AdminResponse, SignerListResponse,
-    ThresholdResponse, TxExecutionsResponse, WhitelistAddressesResponse,
+    AdminResponse, SignerListResponse, ThresholdResponse, TransferLimitsResponse, TxExecutionsResponse, WhitelistAddressesResponse
 };
 use crate::state::{TxData, POLICY, STATE, TX_EXECUTION, TX_NEXT_ID};
 
@@ -57,6 +56,14 @@ pub fn whitelist_addresses(deps: Deps) -> StdResult<WhitelistAddressesResponse> 
     let policy = POLICY.load(deps.storage)?;
     let resp = WhitelistAddressesResponse{
         whitelist_addresses: policy.whitelist_addresses.into_iter().map(|a| a.into()).collect(),
+    };
+    Ok(resp)
+}
+
+pub fn transfer_limits(deps: Deps) -> StdResult<TransferLimitsResponse> {
+    let policy = POLICY.load(deps.storage)?;
+    let resp = TransferLimitsResponse{
+        transfer_limits: policy.transfer_limits.into_iter().map(|a| a.into()).collect(),
     };
     Ok(resp)
 }

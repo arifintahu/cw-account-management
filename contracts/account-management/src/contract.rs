@@ -9,13 +9,10 @@ use crate::helpers::{map_validate, validate_addr, is_valid_threshold};
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
 use crate::state::{Policy, State, POLICY, STATE, TX_NEXT_ID};
 use crate::execute::{
-    add_signers, set_whitelist_addresses, change_admin, change_threshold,
-    execute_transaction, remove_signers, remove_whitelist_addresses,
-    sign_transaction,
+    add_signers, change_admin, change_threshold, execute_transaction, remove_signers, remove_transfer_limits, remove_whitelist_addresses, set_transfer_limits, set_whitelist_addresses, sign_transaction
 };
 use crate::query::{
-    admin, signer_list, threshold, tx_executions, 
-    whitelist_addresses,
+    admin, signer_list, threshold, transfer_limits, tx_executions, whitelist_addresses
 };
 
 // version info for migration info
@@ -69,8 +66,8 @@ pub fn execute(
         ExecuteMsg::SignTransaction { tx_id } => sign_transaction(deps, info, tx_id),
         ExecuteMsg::SetWhitelistAddresses { addresses } => set_whitelist_addresses(deps, info, addresses),
         ExecuteMsg::RemoveWhitelistAddresses { addresses } => remove_whitelist_addresses(deps, info, addresses),
-        ExecuteMsg::SetTransferLimits { coins } => Ok((Response::new())),
-        ExecuteMsg::RemoveTransferLimits { denoms } => Ok((Response::new())),
+        ExecuteMsg::SetTransferLimits { coins } => set_transfer_limits(deps, info, coins),
+        ExecuteMsg::RemoveTransferLimits { denoms } => remove_transfer_limits(deps, info, denoms),
     }
 }
 
@@ -86,5 +83,6 @@ pub fn query(
         QueryMsg::Signerlist {} => to_json_binary(&signer_list(deps)?),
         QueryMsg::TxExecutions {} => to_json_binary(&tx_executions(deps)?),
         QueryMsg::WhitelistAddresses {} => to_json_binary(&whitelist_addresses(deps)?),
+        QueryMsg::TransferLimits {  } => to_json_binary(&transfer_limits(deps)?),
     }
 }

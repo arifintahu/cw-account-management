@@ -1,7 +1,7 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use cosmwasm_std::{
-    Addr, BankMsg, CosmosMsg, DepsMut, MessageInfo, Response
+    Addr, BankMsg, Coin, CosmosMsg, DepsMut, MessageInfo, Response, Uint128
 };
 use crate::error::ContractError;
 use crate::state::{
@@ -249,4 +249,64 @@ pub fn remove_whitelist_addresses (
     POLICY.save(deps.storage, &curr_policy)?;
 
     Ok(Response::new().add_attribute("action", "remove_whitelist_addresses"))
+}
+
+pub fn set_transfer_limits(
+    deps: DepsMut,
+    info: MessageInfo,
+    coins: Vec<Coin>,
+) -> Result<Response, ContractError> {
+    let curr_state = STATE.load(deps.storage)?;
+    if !curr_state.can_modify(info.sender.as_ref()) {
+        return Err(ContractError::Unauthorized {
+            sender: info.sender,
+        });
+    }
+    
+    let mut curr_policy = POLICY.load(deps.storage)?;
+
+    // Convert current transfer limits to a HashMap for easy updating
+    let mut transfer_limits_map: HashMap<String, Uint128> = HashMap::new();
+    for coin in curr_policy.transfer_limits {
+        transfer_limits_map.insert(coin.denom.clone(), coin.amount);
+    }
+    
+    // Update the transfer limits with the new coins
+    for coin in coins.clone() {
+        transfer_limits_map.insert(coin.denom.clone(), coin.amount);
+    }
+    
+    // Convert the HashMap back to a Vec<Coin>
+    curr_policy.transfer_limits = transfer_limits_map.into_iter()
+        .map(|(denom, amount)| Coin { denom, amount })
+        .collect();
+
+    POLICY.save(deps.storage, &curr_policy)?;
+
+    Ok(Response::new().add_attribute("action", "set_transfer_limits"))
+}
+
+pub fn remove_transfer_limits(
+    deps: DepsMut,
+    info: MessageInfo,
+    denoms: Vec<String>,
+) -> Result<Response, ContractError> {
+    let curr_state = STATE.load(deps.storage)?;
+    if !curr_state.can_modify(info.sender.as_ref()) {
+        return Err(ContractError::Unauthorized {
+            sender: info.sender,
+        });
+    }
+    
+    let mut curr_policy = POLICY.load(deps.storage)?;
+    
+    // Convert the list of denominations to a HashSet for efficient lookup
+    let denoms_set: HashSet<String> = denoms.into_iter().collect();
+    
+    // Remove coins with denominations in the denoms_set
+    curr_policy.transfer_limits.retain(|coin| !denoms_set.contains(&coin.denom));
+    
+    POLICY.save(deps.storage, &curr_policy)?;
+    
+    Ok(Response::new().add_attribute("action", "remove_transfer_limits"))
 }

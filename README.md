@@ -12,8 +12,8 @@
 - [x] change threshold
 - [x] execute account tx
 - [x] sign account tx by signer
-- [x] add/remove whitelist addresses
-- [ ] add/remove transfer limit
+- [x] set/remove whitelist addresses
+- [ ] set/remove transfer limit
 
 # Query
 - [x] query admin
