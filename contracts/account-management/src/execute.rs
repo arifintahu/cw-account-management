@@ -124,12 +124,24 @@ pub fn execute_transaction(
             }
         })
         .collect();
-    assert_eq!(send_msgs.len(), 1);
-
+    
+    let policy = POLICY.load(deps.storage)?;
+    
     for send_msg in send_msgs {
         if let BankMsg::Send { to_address, amount } = send_msg {
-            println!("To Address: {}, Amount: {:?}", to_address, amount);
-            // Do something with the amount
+            if !policy.can_receive(&to_address) {
+                return Err(ContractError::NotAllowedRecipient {
+                    recipient: to_address,
+                });
+            }
+
+            for amt in amount {
+                if !policy.can_transfer(amt.clone()) {
+                    return Err(ContractError::NotAllowedAmount {
+                        amount: amt,
+                    });
+                }                   
+            }
         }
     }
 

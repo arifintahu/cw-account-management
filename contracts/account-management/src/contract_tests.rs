@@ -329,13 +329,35 @@ fn exec_execute_transaction() {
                 admin: Addr::unchecked("owner").to_string(),
                 signers: vec![Addr::unchecked("owner").to_string()],
                 threshold: 1,
-                whitelist_enabled: false,
+                whitelist_enabled: true,
             },
             &[],
             "Contract",
             None,
         )
         .unwrap();
+
+    let msg: ExecuteMsg<Empty> = ExecuteMsg::SetWhitelistAddresses { 
+        addresses: vec![CARL.to_string()],
+    };
+    let _ = app
+        .execute_contract(
+            Addr::unchecked("owner"),
+            addr.clone(),
+            &msg,
+            &[],
+        ).unwrap();
+
+    let msg: ExecuteMsg<Empty> = ExecuteMsg::SetTransferLimits { 
+        coins: vec![coin(1100, DENOM)],
+    };
+    let _ = app
+        .execute_contract(
+            Addr::unchecked("owner"),
+            addr.clone(),
+            &msg,
+            &[],
+        ).unwrap();
 
     let _ = app.send_tokens(Addr::unchecked("owner"), addr.clone(), &[coin(10000, DENOM)]);
     let balance = app.wrap().query_balance(addr.clone(), DENOM).unwrap();

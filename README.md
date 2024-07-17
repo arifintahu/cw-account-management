@@ -14,6 +14,7 @@
 - [x] sign account tx by signer
 - [x] set/remove whitelist addresses
 - [x] set/remove transfer limit
+- [x] enable/disable whitelist address
 
 # Query
 - [x] query admin
