@@ -3,7 +3,7 @@ use std::collections::HashSet;
 use cosmwasm_std::{coin, Addr, BankMsg, Coin, Empty, Uint128};
 use cw_multi_test::{App, ContractWrapper, Executor, AppBuilder};
 use crate::msg::{
-    AdminResponse, ExecuteMsg, InstantiateMsg, QueryMsg, SignerListResponse, ThresholdResponse, TransferLimitsResponse, TxExecutionsResponse, WhitelistAddressesResponse
+    AdminResponse, ExecuteMsg, InstantiateMsg, QueryMsg, SignerListResponse, ThresholdResponse, TransferLimitsResponse, TxExecutionsResponse, WhitelistAddressesResponse, WhitelistEnabledResponse
 };
 use crate::contract::{instantiate, query, execute};
 use crate::state::TxStatus;
@@ -196,6 +196,52 @@ fn exec_change_threshold() {
         resp,
         ThresholdResponse {
             threshold: 2
+        }
+    );
+}
+
+#[test]
+fn exec_change_whitelist_enabled() {
+    let mut app = App::default();
+
+    let code = ContractWrapper::new(execute, instantiate, query);
+    let code_id = app.store_code(Box::new(code));
+
+    let addr = app
+        .instantiate_contract(
+            code_id,
+            Addr::unchecked( ALICE.to_string()),
+            &InstantiateMsg {
+                admin: ALICE.to_string(),
+                signers: vec![ALICE.to_string(), CARL.to_string()],
+                threshold: 1,
+                whitelist_enabled: false,
+            },
+            &[],
+            "Contract",
+            None,
+        )
+        .unwrap();
+
+    let msg: ExecuteMsg<Empty> = ExecuteMsg::ChangeWhitelistEnabled { 
+        enabled: true,
+    };
+    let _ = app
+        .execute_contract(
+            Addr::unchecked( ALICE.to_string()),
+            addr.clone(),
+            &msg,
+            &[],
+        ).unwrap();
+    
+    let resp: WhitelistEnabledResponse = app
+        .wrap()
+        .query_wasm_smart(addr.clone(), &QueryMsg::WhitelistEnabled {})
+        .unwrap();
+    assert_eq!(
+        resp,
+        WhitelistEnabledResponse {
+            whitelist_enabled: true,
         }
     );
 }

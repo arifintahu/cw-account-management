@@ -1,6 +1,6 @@
 use cosmwasm_std::{Deps, Order, StdResult};
 use crate::msg::{
-    AdminResponse, SignerListResponse, ThresholdResponse, TransferLimitsResponse, TxExecutionsResponse, WhitelistAddressesResponse
+    AdminResponse, SignerListResponse, ThresholdResponse, TransferLimitsResponse, TxExecutionsResponse, WhitelistAddressesResponse, WhitelistEnabledResponse
 };
 use crate::state::{TxData, POLICY, STATE, TX_EXECUTION, TX_NEXT_ID};
 
@@ -24,6 +24,14 @@ pub fn threshold(deps: Deps) -> StdResult<ThresholdResponse> {
     let cfg = STATE.load(deps.storage)?;
     let resp = ThresholdResponse{
         threshold: cfg.threshold.to_owned(),
+    };
+    Ok(resp)
+}
+
+pub fn whitelist_enabled(deps: Deps) -> StdResult<WhitelistEnabledResponse> {
+    let policy = POLICY.load(deps.storage)?;
+    let resp = WhitelistEnabledResponse{
+        whitelist_enabled:policy.whitelist_enabled.to_owned(),
     };
     Ok(resp)
 }

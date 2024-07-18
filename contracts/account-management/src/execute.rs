@@ -62,6 +62,29 @@ pub fn change_threshold(
     )
 }
 
+pub fn change_whitelist_enabled(
+    deps: DepsMut,
+    info: MessageInfo,
+    enabled: bool,
+) -> Result<Response, ContractError> {
+    let curr_state = STATE.load(deps.storage)?;
+    if !curr_state.can_modify(info.sender.as_ref()) {
+        return Err(ContractError::Unauthorized {
+            sender: info.sender,
+        });
+    }
+
+    let mut curr_policy = POLICY.load(deps.storage)?;
+    curr_policy.whitelist_enabled = enabled;
+    POLICY.save(deps.storage, &curr_policy)?;
+
+    Ok(
+        Response::new()
+            .add_attribute("action", "change_whitelist_enabled")
+            .add_attribute("new_whitelist_enabled", enabled.to_string())
+    )
+}
+
 pub fn add_signers(
     deps: DepsMut,
     info: MessageInfo,

@@ -1,1 +1,12 @@
 name = "cw-account-management"
+gas_prices = "0.02untrn"
+gas_adjustment = 1.5
+account_prefix = "neutron"
+derivation_path = "m/44'/118'/0'/0/0"
+denom = "untrn"
+
+[networks.pion]
+chain_id = "pion-1"
+network_variant = "Shared"
+rpc_endpoint = "https://rpc-palvus.pion-1.ntrn.tech"
+grpc_endpoint = "http://grpc-falcron.pion-1.ntrn.tech:80"

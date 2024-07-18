@@ -9,10 +9,10 @@ use crate::helpers::{map_validate, validate_addr, is_valid_threshold};
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
 use crate::state::{Policy, State, POLICY, STATE, TX_NEXT_ID};
 use crate::execute::{
-    add_signers, change_admin, change_threshold, execute_transaction, remove_signers, remove_transfer_limits, remove_whitelist_addresses, set_transfer_limits, set_whitelist_addresses, sign_transaction
+    add_signers, change_admin, change_threshold, change_whitelist_enabled, execute_transaction, remove_signers, remove_transfer_limits, remove_whitelist_addresses, set_transfer_limits, set_whitelist_addresses, sign_transaction
 };
 use crate::query::{
-    admin, signer_list, threshold, transfer_limits, tx_executions, whitelist_addresses
+    admin, signer_list, threshold, transfer_limits, tx_executions, whitelist_addresses, whitelist_enabled
 };
 
 // version info for migration info
@@ -60,6 +60,7 @@ pub fn execute(
     match msg {
         ExecuteMsg::ChangeAdmin { new_admin } => change_admin(deps, info, new_admin),
         ExecuteMsg::ChangeThreshold { new_threshold } => change_threshold(deps, info, new_threshold),
+        ExecuteMsg::ChangeWhitelistEnabled { enabled } => change_whitelist_enabled(deps, info, enabled),
         ExecuteMsg::AddSigners { signers } => add_signers(deps, info, signers),
         ExecuteMsg::RemoveSigners { signers } => remove_signers(deps, info, signers),
         ExecuteMsg::ExecuteTransaction { msgs } => execute_transaction(deps, info, msgs),
@@ -81,6 +82,7 @@ pub fn query(
         QueryMsg::Admin {} => to_json_binary(&admin(deps)?),
         QueryMsg::Threshold {} => to_json_binary(&threshold(deps)?),
         QueryMsg::Signerlist {} => to_json_binary(&signer_list(deps)?),
+        QueryMsg::WhitelistEnabled {  } => to_json_binary(&whitelist_enabled(deps)?),
         QueryMsg::TxExecutions {} => to_json_binary(&tx_executions(deps)?),
         QueryMsg::WhitelistAddresses {} => to_json_binary(&whitelist_addresses(deps)?),
         QueryMsg::TransferLimits {  } => to_json_binary(&transfer_limits(deps)?),

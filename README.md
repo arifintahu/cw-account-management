@@ -23,3 +23,14 @@
 - [x] query whitelist-addresses
 - [x] query transfer limit
 - [x] query tx executions
+
+# Deploy
+1. Build
+```
+beaker wasm build --no-wasm-opt
+```
+
+2. Store code
+```
+ beaker wasm store-code account-management --no-wasm-opt --network pion --signer-mnemonic "mnemmonic"
+```

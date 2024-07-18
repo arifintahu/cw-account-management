@@ -25,6 +25,8 @@ where
     ChangeAdmin { new_admin: String },
     // ChangeThreshold will change current threshold to new threshold, must be called by a current admin
     ChangeThreshold { new_threshold: u8 },
+    // ChangeWhitelistEnabled will change current whitelist enabled, must be called by a current admin
+    ChangeWhitelistEnabled { enabled: bool },
     // AddSigners will add signers to current signers, must be called by an admin
     AddSigners { signers: Vec<String> },
     // RemoveSigners will remove signers from current signers, must be called by an admin
@@ -57,6 +59,9 @@ pub enum QueryMsg {
     #[returns(ThresholdResponse)]
     Threshold {},
 
+    #[returns(WhitelistEnabledResponse)]
+    WhitelistEnabled {},
+
     #[returns(TxExecutionsResponse)]
     TxExecutions {},
 
@@ -83,6 +88,12 @@ pub struct SignerListResponse {
 #[serde(rename_all = "snake_case")]
 pub struct ThresholdResponse {
     pub threshold: u8,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct WhitelistEnabledResponse {
+    pub whitelist_enabled: bool,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
